@@ -1,0 +1,66 @@
+@import '../../styles/colors.css';
+
+/* Modal con alta especificidad */
+.modal-header[class] {
+  background: linear-gradient(135deg, var(--color-footer) 0%, #5c725e 100%);
+  border-bottom: 2px solid var(--color-botones);
+}
+
+.modal-body[class] {
+  background: linear-gradient(135deg, var(--color-fondo) 0%, #f0ede6 100%);
+}
+
+.modal-footer[class] {
+  background: linear-gradient(135deg, var(--color-fondo) 0%, #f0ede6 100%);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Títulos del modal */
+.modal-header[class] .modal-title[class] {
+  color: var(--color-blanco);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Formularios */
+.modal-body[class] .form-control[class],
+.modal-body[class] .form-select[class] {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  transition: var(--transicion-suave);
+}
+
+.modal-body[class] .form-label[class] {
+  color: var(--color-texto-secundario);
+  font-weight: 500;
+}
+
+/* Botones del modal */
+.modal-footer[class] .btn[class] {
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  transition: var(--transicion-suave);
+}
+
+.modal-footer[class] .btn-secondary[class] {
+  background: #6c757d;
+  border: none;
+}
+
+.modal-footer[class] .btn-secondary[class]:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+.modal-footer[class] .btn-success[class] {
+  background: linear-gradient(135deg, var(--color-botones) 0%, var(--color-botones-hover) 100%);
+  border: none;
+}
+
+.modal-footer[class] .btn-success[class]:hover {
+  background: linear-gradient(135deg, var(--color-botones-hover) 0%, #c98778 100%);
+  transform: translateY(-1px);
+}

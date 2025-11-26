@@ -1,0 +1,14 @@
+@import './styles/colors.css';
+
+#root[class] {
+  margin: 0 auto;
+  height: 100vh;
+  padding: 0;
+  background-color: var(--color-fondo);
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}

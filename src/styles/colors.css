@@ -1,0 +1,34 @@
+:root {
+  /* Colores Principales */
+  --color-fondo: #e4e1d9;
+  --color-header: #88a18a;
+  --color-footer: #6A7F6C;
+  --color-botones: #e8a99c;
+  --color-botones-hover: #D4988A;
+  
+  /* Colores de Texto */
+  --color-texto-primario: #4A4A4A;
+  --color-texto-secundario: #5D5D5D;
+  --color-texto-claro: #88A18A;
+  --color-blanco: #FFFFFF;
+  
+  /* Colores Complementarios */
+  --color-beige: #d4c3b2;
+  --color-lavanda: #d7cdeb;
+  
+  /* Estados y Utilidades */
+  --color-success: #198754;
+  --color-warning: #ffc107;
+  --color-info: #0dcaf0;
+  --color-border: rgba(0, 0, 0, 0.1);
+  
+  /* Efectos */
+  --sombra-suave: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --sombra-media: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --transicion-rapida: all 0.2s ease-in-out;
+  --transicion-suave: all 0.3s ease-in-out;
+  
+  /* Bordes */
+  --border-radius: 8px;
+  --border-radius-lg: 12px;
+}

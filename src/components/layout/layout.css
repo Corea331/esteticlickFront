@@ -1,0 +1,16 @@
+@import '../../styles/colors.css';
+
+/* Contenedor principal del layout */
+.layout-container[class] {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-fondo);
+}
+
+/* Main content */
+.layout-container[class] .layout-main[class] {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

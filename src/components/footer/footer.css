@@ -1,0 +1,53 @@
+@import '../../styles/colors.css';
+
+/* Footer con alta especificidad */
+footer.container-fluid[class] {
+  background: linear-gradient(135deg, var(--color-footer) 0%, #5c725e 100%);
+  border-top: 3px solid var(--color-botones);
+}
+
+/* Botón del footer */
+footer.container-fluid[class] .boton[class] {
+  background: linear-gradient(135deg, var(--color-botones) 0%, var(--color-botones-hover) 100%);
+  border: none;
+  border-radius: var(--border-radius);
+  color: var(--color-texto-primario);
+  font-weight: 600;
+  font-size: 1.25rem;
+  padding: 0.75rem 2rem;
+  transition: var(--transicion-suave);
+  box-shadow: var(--sombra-suave);
+}
+
+footer.container-fluid[class] .boton[class]:hover {
+  background: linear-gradient(135deg, var(--color-botones-hover) 0%, #c98778 100%);
+  color: var(--color-blanco);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-media);
+}
+
+/* Títulos del footer */
+footer.container-fluid[class] h4[class] {
+  color: var(--color-blanco);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+/* Modal dentro del footer */
+footer.container-fluid[class] .modal-header[class],
+footer.container-fluid[class] .modal-body[class],
+footer.container-fluid[class] .modal-footer[class] {
+  background: linear-gradient(135deg, var(--color-footer) 0%, #5c725e 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  footer.container-fluid[class] {
+    text-align: center;
+  }
+  
+  footer.container-fluid[class] .boton[class] {
+    font-size: 1.1rem;
+    padding: 0.6rem 1.5rem;
+  }
+}

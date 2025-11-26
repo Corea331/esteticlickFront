@@ -1,0 +1,157 @@
+@import '../../styles/colors.css';
+
+/* Contenedor principal */
+.social-container[class] {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: auto;
+  padding: 20px;
+}
+
+/* Flip card */
+.social-flip-card[class] {
+  background-color: transparent;
+  perspective: 1000px;
+  width: 220px;
+  height: 220px;
+}
+
+.social-flip-card-inner[class] {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s ease-in-out;
+  transform-style: preserve-3d;
+}
+
+.social-flip-card[class].flipped .social-flip-card-inner[class] {
+  transform: rotateY(180deg);
+}
+
+/* Caras del flip card */
+.social-flip-card-front[class],
+.social-flip-card-back[class] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-lg);
+  box-sizing: border-box;
+}
+
+/* Frente */
+.social-flip-card-front[class] {
+  background: radial-gradient(60% 100% at 50% 50%, var(--color-beige) 65%, var(--color-botones) 90%);
+  color: var(--color-texto-primario);
+  padding: 20px;
+  border: 2px solid var(--color-botones);
+}
+
+.social-front-content[class] {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-text[class] {
+  position: relative;
+  font-size: 1.4em;
+  color: var(--color-texto-primario);
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 0.33em;
+  z-index: 10;
+  line-height: 2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Dorso */
+.social-flip-card-back[class] {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 2px solid var(--color-blanco);
+  transform: rotateY(180deg);
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Grid de redes sociales */
+.social-grid[class] {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  align-content: center;
+  justify-content: center;
+}
+
+/* Tarjetas sociales */
+.social-card[class] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--border-radius);
+  transition: var(--transicion-suave);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.social-icon[class] {
+  font-size: 24px;
+  color: var(--social-color);
+  transition: var(--transicion-suave);
+  z-index: 2;
+}
+
+/* Efectos hover */
+.social-card[class]:hover {
+  background-color: var(--social-color);
+  transform: scale(1.1);
+  z-index: 10;
+}
+
+.social-card[class]:hover .social-icon[class] {
+  color: var(--color-blanco);
+}
+
+/* Efecto de brillo */
+.social-card[class]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: left 0.6s;
+}
+
+.social-card[class]:hover::before {
+  left: 100%;
+}

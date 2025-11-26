@@ -1,0 +1,23 @@
+@import './colors.css';
+
+/* Estilos de focus consistentes con alta especificidad */
+body .form-control[class]:focus,
+body .form-select[class]:focus,
+body textarea[class]:focus {
+  border-color: var(--color-botones);
+  box-shadow: 0 0 0 0.2rem rgba(232, 169, 156, 0.25);
+  outline: none;
+}
+
+/* Utilidades comunes */
+.transition-all {
+  transition: var(--transicion-suave);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.shadow-custom {
+  box-shadow: var(--sombra-suave);
+}

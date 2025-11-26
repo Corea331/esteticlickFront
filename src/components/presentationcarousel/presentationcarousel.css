@@ -1,0 +1,65 @@
+@import '../../styles/colors.css';
+
+/* Carousel con alta especificidad */
+.carousel[class] {
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--sombra-media);
+}
+
+.carousel[class] .card[class] {
+  border: none;
+  border-radius: var(--border-radius-lg);
+  transition: var(--transicion-suave);
+}
+
+.carousel[class] .card[class]:hover {
+  transform: translateY(-5px);
+}
+
+.carousel[class] .card-body[class] {
+  background: linear-gradient(135deg, var(--color-header) 0%, #7a957c 100%);
+  border-radius: var(--border-radius-lg);
+}
+
+/* Títulos del carousel */
+.carousel[class] .card-title[class] {
+  color: var(--color-blanco);
+  font-weight: 600;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Listas del carousel */
+.carousel[class] .list-group[class] {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.carousel[class] .list-group-item[class] {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--color-border);
+  padding: 1rem 1.5rem;
+  transition: var(--transicion-rapida);
+}
+
+.carousel[class] .list-group-item[class]:hover {
+  background: var(--color-blanco);
+  transform: translateX(5px);
+}
+
+.carousel[class] .list-group-item[class].list-group-item-success {
+  background: rgba(232, 169, 156, 0.1);
+  border-left: 4px solid var(--color-botones);
+}
+
+.carousel[class] .card-text[class] {
+  color: var(--color-texto-primario);
+  text-indent: 0;
+  margin: 0;
+  font-weight: 500;
+}
