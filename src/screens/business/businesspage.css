@@ -256,7 +256,7 @@
   }
   
   .page-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
   
   .page-header p {
@@ -276,13 +276,22 @@
   
   .businesses-table .generic-table th,
   .businesses-table .generic-table td {
-    padding: 1rem 0.5rem;
-    font-size: 0.9rem;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
   }
   
   .businesses-table .rating-cell {
     align-items: center;
     text-align: center;
+    gap: 0.125rem;
+  }
+  
+  .businesses-table .rating-value {
+    font-size: 0.9rem;
+  }
+  
+  .businesses-table .rating-stars {
+    font-size: 0.8rem;
   }
 }
 
@@ -294,36 +303,26 @@
   .page-header {
     margin: 0 -0.5rem 1.5rem;
     border-radius: 0;
+    padding: 1rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5rem;
   }
   
   .businesses-table .generic-table-container {
     border-radius: 0;
     margin: 0 -0.5rem;
+    box-shadow: none;
   }
   
   .table-header-actions,
   .table-info,
   .table-pagination {
-    padding: 1rem;
+    padding: 0.75rem;
   }
-}
-
-/* Animaciones de carga */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+  
+  .businesses-table .search-input {
+    font-size: 0.875rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.businesses-page {
-  animation: fadeIn 0.5s ease-out;
-}
-
-.businesses-table .generic-table-container {
-  animation: fadeIn 0.7s ease-out;
 }

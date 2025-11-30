@@ -43,13 +43,14 @@
 
 .table-responsive {
   overflow-x: auto;
+  width: 100%;
 }
 
 .generic-table {
   width: 100%;
   border-collapse: collapse;
   background-color: var(--color-blanco);
-  min-width: 600px;
+  min-width: 0;
 }
 
 .generic-table th {
@@ -230,46 +231,35 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .table-header-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .table-search-box {
-    min-width: auto;
+  .generic-table {
+    font-size: 0.875rem;
   }
   
   .generic-table th,
   .generic-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.9rem;
+    padding: 0.5rem;
+    white-space: nowrap;
   }
   
-  .th-content {
-    flex-direction: column;
-    gap: 0.25rem;
-    align-items: flex-start;
-  }
-  
-  .sort-icon {
-    align-self: flex-end;
-  }
-  
-  .table-pagination {
-    flex-direction: column;
-    gap: 0.5rem;
+  /* Ocultar columnas menos importantes en móvil */
+  .generic-table th:nth-child(4), /* Reseñas */
+  .generic-table td:nth-child(4),
+  .generic-table th:nth-child(5), /* Teléfono */
+  .generic-table td:nth-child(5) {
+    display: none;
   }
 }
 
 @media (max-width: 480px) {
-  .generic-table-container {
-    border-radius: 0;
-    margin: 0 -1rem;
+  .generic-table th,
+  .generic-table td {
+    padding: 0.375rem;
+    font-size: 0.8rem;
   }
   
-  .table-header-actions,
-  .table-info,
-  .table-pagination {
-    padding: 1rem;
+  /* Ocultar más columnas en pantallas muy pequeñas */
+  .generic-table th:nth-child(3), /* Calificación */
+  .generic-table td:nth-child(3) {
+    display: none;
   }
 }
