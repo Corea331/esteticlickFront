@@ -1,0 +1,103 @@
+@import '../../styles/colors.css';
+
+.search-box {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transicion-suave);
+  background-color: var(--color-blanco);
+  color: var(--color-texto-primario);
+  font-family: inherit;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-botones);
+  box-shadow: 0 0 0 0.2rem rgba(232, 169, 156, 0.25);
+}
+
+.search-input::placeholder {
+  color: var(--color-texto-claro);
+  opacity: 0.8;
+}
+
+.search-btn {
+  background: linear-gradient(135deg, var(--color-botones) 0%, var(--color-botones-hover) 100%);
+  border: none;
+  border-radius: var(--border-radius);
+  color: var(--color-blanco);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: var(--transicion-suave);
+  box-shadow: var(--sombra-suave);
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: inherit;
+}
+
+.search-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-botones-hover) 0%, #c98778 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-media);
+}
+
+.search-btn:disabled {
+  background: var(--color-texto-claro);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* Variantes de tamaño */
+.search-box.compact .search-input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.search-box.compact .search-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.search-box.large .search-input {
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem;
+}
+
+.search-box.large .search-btn {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .search-input-group {
+    flex-direction: column;
+  }
+  
+  .search-btn {
+    justify-content: center;
+  }
+
+  .search-box {
+    max-width: 100%;
+  }
+}

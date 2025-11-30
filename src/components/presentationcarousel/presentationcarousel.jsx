@@ -1,62 +1,88 @@
 import { Carousel } from 'react-bootstrap'
-import { Card } from 'react-bootstrap'
 import './presentationcarousel.css'
 
 function PresentationCarousel() {
   return(
-  <Carousel className='w-100'>
+    <Carousel className='esteticlick-carousel' indicators interval={5000}>
     <Carousel.Item>
-      <Card style={{ width: 'auto', justifyContent: 'center' }}>
-        <Card.Body style={{ backgroundColor: '#88a18a' }}>
-          <Card.Title className='text-center'><i className="bi bi-clock-fill"></i> Solicitar Turnos</Card.Title>
-          <ul className="list-group list-group-numbered" style={{ padding: '15px 80px 15px 80px' }}>
-            <li className='list-group-item list-group-item-success'><Card.Text>Reserva online 24/7.</Card.Text></li>
-            <li className='list-group-item list-group-item-success'><Card.Text>Visualización en tiempo real de horarios disponibles.</Card.Text></li>
-            <li className='list-group-item list-group-item-success'><Card.Text>Asignación automática según especialidad y disponibilidad.</Card.Text></li>
-          </ul>
-          <br />
-        </Card.Body>
-      </Card>
-    </Carousel.Item >
-    <Carousel.Item >
-    <Card style={{ width: 'auto' }}>
-        <Card.Body style={{ backgroundColor: '#88a18a'  }}>
-          <Card.Title className='text-center my-3'><i className="bi bi-calendar2-check-fill"></i> Confirmación Automática</Card.Title>
-          <ul className="list-group list-group-numbered" style={{ padding: '15px 80px 15px 80px' }}>
-            <li className='list-group-item list-group-item-success'><Card.Text>Notificaciones inmediatas vía email o SMS.</Card.Text></li>
-            <li className='list-group-item list-group-item-success'><Card.Text>Recordatorios programados previo a la cita.</Card.Text></li>
-            <li className='list-group-item list-group-item-success'><Card.Text>Confirmación con un solo clic por parte del cliente.</Card.Text></li>
-          </ul>
-          <br />
-        </Card.Body>
-      </Card>
-    </Carousel.Item >
+      <div className='carousel-card'>
+        <h4 className='carousel-title'>
+          <i className="bi bi-clock-fill"></i> 
+          Solicitar Turnos
+        </h4>
+        <ul className='carousel-list'>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Reserva online 24/7 desde cualquier dispositivo</p>
+          </li>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Visualización en tiempo real de horarios disponibles</p>
+          </li>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Asignación automática según especialidad y disponibilidad</p>
+          </li>
+        </ul>
+      </div>
+    </Carousel.Item>
+    
     <Carousel.Item>
-    <Card style={{ width: 'auto' }}>
-        <Card.Body style={{ backgroundColor: '#88a18a' }}>
-          <Card.Title className='text-center'><i className="bi bi-chat-text-fill"></i> Modificación Flexible</Card.Title>
-            <ul className="list-group list-group-numbered" style={{ padding: '15px 80px 15px 80px' }}>
-            <li className='list-group-item list-group-item-success'><Card.Text>Cambio de horarios sin complicaciones.</Card.Text></li>
-            <li className='list-group-item list-group-item-success'><Card.Text>Reagendamiento automático según nueva disponibilidad.</Card.Text></li>
-            <li className='list-group-item list-group-item-success'><Card.Text>Notificación instantánea de modificaciones.</Card.Text></li>
-            </ul>
-          <br />
-        </Card.Body>
-      </Card>
-    </Carousel.Item >
+      <div className='carousel-card'>
+        <h4 className='carousel-title'>
+          <i className="bi bi-calendar2-check-fill"></i> 
+          Confirmación Automática
+        </h4>
+        <ul className='carousel-list'>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Notificaciones inmediatas vía email o SMS</p>
+          </li>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Recordatorios programados previo a la cita</p>
+          </li>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Confirmación con un solo clic por parte del cliente</p>
+          </li>
+        </ul>
+      </div>
+    </Carousel.Item>
+    
     <Carousel.Item>
-    <Card style={{ width: 'auto' }}>
-        <Card.Body style={{ backgroundColor: '#88a18a' }}>
-          <Card.Title className='text-center'><i className="bi bi-x-octagon-fill"></i> Cancelación Controlada</Card.Title>
-          <ul className="list-group list-group-numbered" style={{ padding: '15px 80px 15px 80px' }}>
-          <li className='list-group-item list-group-item-success'><Card.Text>Proceso simple y rápido.</Card.Text></li>
-            <li className='list-group-item list-group-item-success'><Card.Text>Liberación automática del horario para nuevos turnos.</Card.Text></li>
-            <li className='list-group-item list-group-item-success'><Card.Text>Políticas personalizables de cancelación.</Card.Text></li>
-          </ul>
-          <br />
-        </Card.Body>
-      </Card>
-    </Carousel.Item >
+      <div className='carousel-card'>
+        <h4 className='carousel-title'>
+          <i className="bi bi-arrow-left-right"></i> 
+          Modificación Flexible
+        </h4>
+        <ul className='carousel-list'>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Cambio de horarios sin complicaciones</p>
+          </li>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Reagendamiento automático según nueva disponibilidad</p>
+          </li>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Notificación instantánea de modificaciones</p>
+          </li>
+        </ul>
+      </div>
+    </Carousel.Item>
+    
+    <Carousel.Item>
+      <div className='carousel-card'>
+        <h4 className='carousel-title'>
+          <i className="bi bi-x-circle-fill"></i> 
+          Cancelación Controlada
+        </h4>
+        <ul className='carousel-list'>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Proceso simple y rápido en pocos clics</p>
+          </li>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Liberación automática del horario para nuevos turnos</p>
+          </li>
+          <li className='carousel-list-item'>
+            <p className='carousel-text'>Políticas personalizables de cancelación</p>
+          </li>
+        </ul>
+      </div>
+    </Carousel.Item>
   </Carousel>
   )
 }

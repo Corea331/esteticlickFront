@@ -6,8 +6,14 @@ import './modalcontacto.css'
 
 
 function ModalContacto({ show, handleClose }) {
-  const [formData, setFormData] = useState({ name: '', email: '', subject: '', phone: '', message: '' });
-  const createContactMutation = useCreateContactMessage();
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    email: '', 
+    subject: '', 
+    phone: '', 
+    message: '' });
+  
+    const createContactMutation = useCreateContactMessage();
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -29,47 +35,63 @@ function ModalContacto({ show, handleClose }) {
       </Modal.Header>
       <form onSubmit={handleSubmit}>
         <Modal.Body>
-          <Form.Control 
+          <Form.Group className="mb-3">
+            <Form.Control 
             type="text"
             placeholder="Nombre"
             value={formData.name}
             onChange={(e) => setFormData({...formData, name: e.target.value})}
             required
           />
-          <Form.Control 
+          </Form.Group>
+          
+          <Form.Group className="mb-3">
+            <Form.Control 
             type="text"
             placeholder="Email"
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
             required
           />
-          <Form.Control 
+          </Form.Group>
+          
+          <Form.Group className="mb-3">
+            <Form.Control 
             type="text"
             placeholder="Asunto"
             value={formData.subject}
             onChange={(e) => setFormData({...formData, subject: e.target.value})}
             required
           />
-          <Form.Control 
+          </Form.Group>
+          
+          <Form.Group className="mb-3">
+            <Form.Control 
             type="text"
             placeholder="Telefono"
             value={formData.phone}
             onChange={(e) => setFormData({...formData, phone: e.target.value})}
             required
           />
-          <Form.Control 
+          </Form.Group>
+          
+          <Form.Group className="mb-0">
+            <Form.Control 
             as="textarea"
+            rows={4}
             placeholder="Mensaje"
             value={formData.message}
             onChange={(e) => setFormData({...formData, message: e.target.value})}
             required
           />
+          </Form.Group>
+          
         </Modal.Body>
 
         <Modal.Footer>
-          <button type="button" onClick={handleClose}><i className="bi bi-x-lg"></i> Cerrar</button>
-          <button type="submit" disabled={createContactMutation.isLoading}>
-            <i className="bi bi-send-check-fill"></i> {createContactMutation.isLoading ? 'Enviando...' : 'Enviar'}
+          <button className="btn" type="button" onClick={handleClose}><i className="bi bi-x-lg"></i> Cerrar</button>
+          <button className="btn" type="submit" disabled={createContactMutation.isLoading}>
+            <i className="bi bi-send-check-fill"></i> {createContactMutation.isLoading ? 'Enviando...' : 'Enviar Mensaje'}
           </button>
         </Modal.Footer>
       </form>

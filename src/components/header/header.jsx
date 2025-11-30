@@ -49,12 +49,12 @@ function Header() {
             src={Logo} 
             alt="Logo" 
             className="img-thumbnail rounded-circle border-2 border-light" 
-            width={80} height={80}
+            width={100} height={100}
             />
           </Link>
           <div className="header-title">
             <h1 className="h4 mb-0">Esteticlick</h1>
-            <p className="small mb-0">Tu belleza, nuestra prioridad</p>
+            <p className="small mb-0">Tu Belleza, Nuestra Prioridad</p>
           </div>
         </div>
         <ul className="nav nav-tabs header-nav">

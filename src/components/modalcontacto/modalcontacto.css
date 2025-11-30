@@ -4,15 +4,19 @@
 .modal-header[class] {
   background: linear-gradient(135deg, var(--color-footer) 0%, #5c725e 100%);
   border-bottom: 2px solid var(--color-botones);
+  padding: 1.5rem;
 }
 
 .modal-body[class] {
   background: linear-gradient(135deg, var(--color-fondo) 0%, #f0ede6 100%);
+  padding: 2rem;
 }
 
 .modal-footer[class] {
   background: linear-gradient(135deg, var(--color-fondo) 0%, #f0ede6 100%);
   border-top: 1px solid var(--color-border);
+  padding: 1.5rem;
+  gap: 1rem;
 }
 
 /* Títulos del modal */
@@ -22,45 +26,117 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 1.5rem;
+  margin: 0;
 }
 
 /* Formularios */
-.modal-body[class] .form-control[class],
-.modal-body[class] .form-select[class] {
-  border: 1px solid var(--color-border);
+.modal-body[class] .form-control[class] {
+  border: 2px solid var(--color-border);
   border-radius: var(--border-radius);
   transition: var(--transicion-suave);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  background: var(--color-blanco);
+  color: var(--color-texto-primario);
 }
 
-.modal-body[class] .form-label[class] {
-  color: var(--color-texto-secundario);
-  font-weight: 500;
+.modal-body[class] .form-control[class]:focus {
+  border-color: var(--color-botones);
+  box-shadow: 0 0 0 0.2rem rgba(232, 169, 156, 0.25);
+  outline: none;
+}
+
+.modal-body[class] .form-control[class]::placeholder {
+  color: var(--color-texto-primario);
 }
 
 /* Botones del modal */
 .modal-footer[class] .btn[class] {
   border-radius: var(--border-radius);
   font-weight: 600;
-  padding: 0.5rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   transition: var(--transicion-suave);
-}
-
-.modal-footer[class] .btn-secondary[class] {
-  background: #6c757d;
   border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 120px;
+  justify-content: center;
 }
 
-.modal-footer[class] .btn-secondary[class]:hover {
-  background: #5a6268;
-  transform: translateY(-1px);
+/* Botón Cerrar */
+.modal-footer[class] .btn[class]:first-child {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  color: var(--color-blanco);
+  box-shadow: var(--sombra-suave);
 }
 
-.modal-footer[class] .btn-success[class] {
+.modal-footer[class] .btn[class]:first-child:hover {
+  background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-media);
+}
+
+/* Botón Enviar */
+.modal-footer[class] .btn[class]:last-child {
   background: linear-gradient(135deg, var(--color-botones) 0%, var(--color-botones-hover) 100%);
-  border: none;
+  color: var(--color-blanco);
+  box-shadow: var(--sombra-suave);
 }
 
-.modal-footer[class] .btn-success[class]:hover {
+.modal-footer[class] .btn[class]:last-child:hover:not(:disabled) {
   background: linear-gradient(135deg, var(--color-botones-hover) 0%, #c98778 100%);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-media);
+}
+
+.modal-footer[class] .btn[class]:last-child:disabled {
+  background: var(--color-texto-claro);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* Close button del header */
+.modal-header[class] .btn-close[class] {
+  background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+  opacity: 0.8;
+  transition: var(--transicion-rapida);
+}
+
+.modal-header[class] .btn-close[class]:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Textarea específico */
+.modal-body[class] .form-control[class][as="textarea"] {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .modal-body[class] {
+    padding: 1.5rem;
+  }
+  
+  .modal-footer[class] {
+    padding: 1rem 1.5rem;
+    flex-direction: column;
+  }
+  
+  .modal-footer[class] .btn[class] {
+    width: 100%;
+    margin: 0;
+  }
+  
+  .modal-header[class] .modal-title[class] {
+    font-size: 1.3rem;
+  }
 }
