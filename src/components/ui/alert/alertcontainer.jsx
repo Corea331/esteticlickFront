@@ -1,6 +1,6 @@
 import { useAlert } from '../../../context/alertcontext';
 import Alert from './alert';
-import './Alert.css';
+import './alert.css';
 
 const AlertContainer = () => {
   const { alerts, removeAlert } = useAlert();
