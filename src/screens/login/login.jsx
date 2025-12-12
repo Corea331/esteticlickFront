@@ -1,31 +1,49 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useLogin } from '../../hooks/apihooks.js';
-import './login.css';
+import { useState, useRef, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { useLogin } from '../../hooks/apihooks.js'
+import { useAuth } from '../../context/authcontext'
+import { useAlert } from '../../context/alertcontext'
+import { processApiError } from '../../utils/alerthandler.js'
+import { API_BASE_URL } from '../../apis/api'
+import './login.css'
 
 function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' })
-  const [error, setError] = useState('')
   const loginMutation = useLogin()
   const navigate = useNavigate()
+  const { login } = useAuth()
+  const { showError, showSuccess } = useAlert()
+  const emailInputRef = useRef(null)
+
+  useEffect(() => {
+    if(emailInputRef.current) {
+      emailInputRef.current.focus();
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError('')
+
+    // Debug: Ver qué datos se están enviando
+    console.log('Enviando datos de login:', {
+      email: formData.email,
+      passwordLength: formData.password?.length || 0
+    });
 
     try {
-      await loginMutation.mutateAsync(formData)
+      const data = await loginMutation.mutateAsync(formData)
+      console.log('Login response:', JSON.stringify(data, null, 2));
+
+      const { access_token: token, user, expires_in } = data;
+      
+      login(user, token, expires_in || 7200);
+
+      showSuccess(`¡Bienvenido/a ${user.name} ` || ` ${user.email}!`)
+
       navigate('/')
     }catch(error) {
-      console.error('Error al iniciar sesión:', error)
-      
-      if(error.message){
-        setError(error.message)
-      } else  if(error.response?.data?.message){
-        setError(error.response.data.message)
-      } else {
-        setError('Error al iniciar sesión. Verifique sus credenciales.')
-      }
+      const alertData = processApiError(error)
+      showError(alertData)
     }
   }
 
@@ -34,12 +52,6 @@ function Login() {
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-4">
-            {error && (
-              <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                <i className="bi bi-exclamation-triangle-fill me-2"></i> {error}
-                <button type="button" className="btn btn-close" data-bs-dismiss="alert" aria-label="close"></button>
-              </div>
-            )}
             <div className="card login-card">
               <div className="card-body p-4">
                 <h2 className="login-title">Iniciar Sesión</h2>
@@ -47,6 +59,7 @@ function Login() {
                   
                   <div className="mb-3">
                     <input 
+                    ref={emailInputRef}
                     type="email"
                     className="form-control login-input"
                     placeholder="Email"

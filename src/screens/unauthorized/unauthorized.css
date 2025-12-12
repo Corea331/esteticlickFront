@@ -1,0 +1,183 @@
+@import '../../styles/colors.css';
+
+/* Contenedor principal */
+.unauthorized-container {
+  background: linear-gradient(135deg, var(--color-fondo) 0%, #f0ede6 100%);
+  min-height: calc(100vh - 200px);
+  display: flex;
+  align-items: center;
+  padding: 3rem 1rem;
+}
+
+/* Card central */
+.unauthorized-container .card {
+  background: var(--color-blanco);
+  border: none;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--sombra-media);
+  transition: var(--transicion-suave);
+  overflow: hidden;
+}
+
+.unauthorized-container .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Icono grande */
+.unauthorized-container .display-1 {
+  font-size: 6rem;
+  margin-bottom: 1.5rem;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+/* Títulos */
+.unauthorized-container h2 {
+  color: var(--color-texto-primario);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  font-size: 2.2rem;
+}
+
+.unauthorized-container .lead {
+  color: var(--color-texto-secundario);
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Botones */
+.unauthorized-container .btn {
+  padding: 0.75rem 1.75rem;
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  transition: var(--transicion-rapida);
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;
+}
+
+.unauthorized-container .btn-primary {
+  background-color: var(--color-botones);
+  border-color: var(--color-botones);
+  color: var(--color-texto-primario);
+}
+
+.unauthorized-container .btn-primary:hover {
+  background-color: var(--color-botones-hover);
+  border-color: var(--color-botones-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-media);
+}
+
+.unauthorized-container .btn-outline-secondary {
+  border-color: var(--color-texto-claro);
+  color: var(--color-texto-claro);
+  background-color: transparent;
+}
+
+.unauthorized-container .btn-outline-secondary:hover {
+  background-color: var(--color-texto-claro);
+  border-color: var(--color-texto-claro);
+  color: var(--color-blanco);
+  transform: translateY(-2px);
+}
+
+/* Iconos en botones */
+.unauthorized-container .btn i {
+  font-size: 1.2rem;
+}
+
+/* Animación de pulso para el icono */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .unauthorized-container {
+    min-height: calc(100vh - 150px);
+    padding: 2rem 0.5rem;
+  }
+  
+  .unauthorized-container .display-1 {
+    font-size: 4.5rem;
+  }
+  
+  .unauthorized-container h2 {
+    font-size: 1.8rem;
+  }
+  
+  .unauthorized-container .lead {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .unauthorized-container .card-body {
+    padding: 2.5rem 1.5rem !important;
+  }
+  
+  .unauthorized-container .btn {
+    min-width: 140px;
+    padding: 0.65rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .unauthorized-container .display-1 {
+    font-size: 3.5rem;
+  }
+  
+  .unauthorized-container h2 {
+    font-size: 1.5rem;
+  }
+  
+  .unauthorized-container .lead {
+    font-size: 1rem;
+  }
+  
+  .d-flex.justify-content-center.gap-3 {
+    flex-direction: column;
+    gap: 1rem !important;
+    align-items: center;
+  }
+  
+  .unauthorized-container .btn {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* Efectos de hover para toda la card */
+.unauthorized-container .card-body {
+  position: relative;
+  z-index: 1;
+}
+
+.unauthorized-container .card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-botones), var(--color-texto-claro));
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}

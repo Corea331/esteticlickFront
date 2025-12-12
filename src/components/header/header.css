@@ -92,6 +92,13 @@ header .navbar[class] .header-nav[class] .nav-item[class] .nav-link[class].activ
   box-shadow: var(--sombra-suave);
 }
 
+/* Estilos para estado loading */
+.header-loading .spinner-border {
+  width: 2rem;
+  height: 2rem;
+  border-width: 0.25em;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   header .navbar-bg-body[class] {
@@ -119,6 +126,18 @@ header .navbar[class] .header-nav[class] .nav-item[class] .nav-link[class].activ
   
   .header-title p {
     font-size: 0.8rem;
+  }
+
+  .header-loading .spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  
+  .header-loading .ms-auto {
+    margin-left: 0 !important;
+    text-align: center;
+    width: 100%;
+    margin-top: 1rem;
   }
 }
 

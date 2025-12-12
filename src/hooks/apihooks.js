@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from 'react'
 import { authAPI, serviceAPI, contactMessagesAPI, ownersAPI } from "../apis/api.js";
+
 
 // Auth HOOKS
 export const useLogin = () => {
@@ -9,12 +11,11 @@ export const useLogin = () => {
     mutationFn: authAPI.login,
     onSuccess: (data) => {
       const {access_token: token, user} = data;
-      if(token) { localStorage.setItem('authToken', token); }
+      if(token) { sessionStorage.setItem('authToken', token); }
       if(user) {
-        localStorage.setItem('user', JSON.stringify(user));
+        sessionStorage.setItem('user', JSON.stringify(user));
         queryClient.setQueryData(['user'], user);
       }
-      queryClient.invalidateQueries(['user']);
     },
     onError: (error) => {
       console.error('Error al iniciar sesión: ', error);
@@ -29,10 +30,10 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: authAPI.logout,
     onSuccess: () => {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('user');
       queryClient.clear();
-      window.location.href('/login');
+      window.location.href = '/login';
     },
   });
 };
@@ -41,7 +42,8 @@ export const useUser = () => {
   return useQuery({
     queryKey: ['user'],
     queryFn: authAPI.getUser,
-    enabled: !!localStorage.getItem('authToken'),
+    enabled: false,
+    staleTime: 5 * 60 * 1000,
   });
 };
 
@@ -114,10 +116,128 @@ export const useDeleteOwner = () => {
   });
 };
 
-export const useAuthCheck = () => {
+// Helper para verifiar autenticación
+export const checkAuth = () => {
+  return !!sessionStorage.getItem('authToken');
+};
+
+// Control de sesiones
+export const useSessionExpiration = () => {
   return useQuery({
-    queryKey: ['auth-check'],
-    queryFn: () => !!localStorage.getItem('authToken'),
-    enabled: false,
+    queryKey: ['session-expiration'],
+    queryFn: authAPI.getTokenExpiration,
+    refetchInterval: 60 * 1000, // cada minuto
+    refetchOnWindowFocus: true,
+    enabled: !!sessionStorage.getItem('authToken'),
+    retry: false,
   });
+};
+
+export const useExtendSession = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ minutes = 120 }) => authAPI.extendSession(minutes),
+    onSuccess: (data) => {
+      console.log('Sesión extendida: ', data.message);
+
+      // Invalidar la query de expiración para que se refresque
+      queryClient.invalidateQueries(['session-expiration']);
+
+      // Disparar evento de sesión extendida
+      window.dispatchEvent(new CustomEvent('session-extended', {
+        detail: {
+          message: 'Sesión extendida exitosamente.',
+          newExpiration: data.expires_at,
+        },
+      }));
+    },
+    onError: (error) => {
+      console.error('Error al extender la sesión: ', error);
+
+      // Si es error 401, limpiar y redirigir al login
+      if(error.message.includes('401') || error.message.includes('No autenticado') || error.message === 'TOKEN_EXPIRED') {
+        window.dispatchEvent(new CustomEvent('token-expired'));
+      }
+
+      throw error;
+    },
+  });
+};
+
+// Helper para verificar periódicamente el tiempo de expiración
+export const useSessionMonitor = () => {
+  const { data: expirationData, error } = useSessionExpiration();
+  
+  useEffect(() => {
+    if (error) {
+      console.warn('Error en monitor de sesión:', error);
+      window.dispatchEvent(new CustomEvent('session-error', {
+        detail: {
+          message: 'Error al verificar sesión',
+          error: error.message
+        }
+      }));
+      return;
+    }
+    
+    if (expirationData) {
+      const { remaining_seconds, expires_soon, is_expired } = expirationData;
+
+      // Disparar estado actual de la sesíón
+      window.dispatchEvent(new CustomEvent('session-update', {
+        detail: {
+          remainingSeconds: remaining_seconds,
+          expiresSoon: expires_soon,
+          isExpired: is_expired
+        }
+      }));
+      
+      if (is_expired) {
+        // Sesión expirada
+        window.dispatchEvent(new CustomEvent('session-status', {
+          detail: {
+            type: 'EXPIRED',
+            severity: 'CRITICAL',
+            message: 'Tu sesión ha expirado',
+            remainingSeconds: remaining_seconds,
+            action: 'logout'
+          }
+        }));
+      } else if (expires_soon) {
+        // Sesión por expirar - determinar nivel de advertencia
+        let warningType = 'WARNING';
+        let severity = 'MEDIUM';
+        
+        if (remaining_seconds < 60) {
+          // Menos de 1 minuto
+          severity = 'CRITICAL';
+          warningType = 'IMMINENT';
+        } else if (remaining_seconds < 300) {
+          // Menos de 5 minutos
+          severity = 'HIGH';
+          warningType = 'URGENT';
+        } else if (remaining_seconds < 600) {
+          // Menos de 10 minutos
+          severity = 'MEDIUM';
+          warningType = 'WARNING';
+        }
+
+        const minutes = Math.ceil(remaining_seconds / 60);
+        window.dispatchEvent(new CustomEvent('session-status', {
+          detail: {
+            type: warningType,
+            severity: severity,
+            message: `Tu sesión expirará en ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`,
+            minutes: minutes,
+            seconds: remaining_seconds,
+            showExtend: remaining_seconds < 300, // Mostrar opción de extender solo si menos de 5 minutos
+            canExtend: true
+          }
+        }));
+      }
+    }
+  }, [expirationData, error]);
+  
+  return { expirationData, error };
 };
