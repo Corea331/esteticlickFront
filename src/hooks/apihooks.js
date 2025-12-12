@@ -29,11 +29,19 @@ export const useLogout = () => {
 
   return useMutation({
     mutationFn: authAPI.logout,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('✅ Logout exitoso:', data);
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('user');
       queryClient.clear();
-      window.location.href = '/home';
+      window.location.href = '/login';
+    },
+    onError: (error) => {
+      console.error('Logout API error: ', error);
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('user');
+      queryClient.clear();
+      window.location.href = '/login';
     },
   });
 };

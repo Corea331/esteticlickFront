@@ -4,7 +4,6 @@ import { useLogin } from '../../hooks/apihooks.js'
 import { useAuth } from '../../context/authcontext'
 import { useAlert } from '../../context/alertcontext'
 import { processApiError } from '../../utils/alerthandler.js'
-import { API_BASE_URL } from '../../apis/api'
 import './login.css'
 
 function Login() {

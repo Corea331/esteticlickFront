@@ -1,10 +1,11 @@
 
 
 // URL base de la api
-export const API_BASE_URL = 'https://esteticlick.alwaysdata.net/api'
+const API_BASE_URL = 'https://esteticlick.alwaysdata.net/api'
 
 const apiRequest = async(endpoint, options = {}) => {
   const token = sessionStorage.getItem('authToken');
+  console.log('API Request - Token:', token ? 'Present' : 'Missing');
 
   const config = {
     headers: {
@@ -24,6 +25,9 @@ const apiRequest = async(endpoint, options = {}) => {
   }
 
   try {
+    console.log('Making request to:', `${API_BASE_URL}${endpoint}`);
+    console.log('Headers:', config.headers);
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
     // Debug: Log de la request
