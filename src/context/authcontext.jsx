@@ -96,7 +96,11 @@ export const AuthProvider = ({ children }) => {
       if (alertFunctions.showInfo) {
         alertFunctions.showInfo(message);
       }
-      window.location.href = '/login';
+
+      // Recargar la página después de logout automático
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
   }, [logoutMutation, alertFunctions]);
 
@@ -233,10 +237,22 @@ export const AuthProvider = ({ children }) => {
     const handleSessionUpdate = (event) => {
       const { remainingSeconds, expiresSoon, isExpired } = event.detail || {};
 
+      // Si la sesión está expirada, hacer logout automático
+      if (isExpired) {
+        console.log('Sesión expirada detectada en session-update');
+        handleAutoLogout('Tu sesión ha expirado');
+        return; // Salir temprano
+      }
+
       if (!expiresSoon && warningShownRef.current) {
+        console.log(`Sesión renovada: ${remainingSeconds} segundos restantes`);
         dispatch({ type: 'CLEAR_SESSION_WARNING' });
         warningShownRef.current = false;
         lastWarningLevelRef.current = '';
+      }
+
+      if (alertFunctions.showSuccess) {
+        alertFunctions.showSuccess('Sesión renovada exitosamente');
       }
     };
 
@@ -328,7 +344,11 @@ export const AuthProvider = ({ children }) => {
       warningShownRef.current = false;
       lastWarningLevelRef.current = '';
       dispatch({ type: 'LOGOUT' });
-      window.location.href = '/login';
+
+      // Recargar la página después de logout manual
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
   }, [logoutMutation]);
 
