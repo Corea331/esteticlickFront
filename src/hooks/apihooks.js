@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
 import { useEffect } from 'react'
 import { authAPI, serviceAPI, contactMessagesAPI, ownersAPI } from "../apis/api.js";
 
@@ -26,6 +27,7 @@ export const useLogin = () => {
 
 export const useLogout = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: authAPI.logout,
@@ -34,14 +36,14 @@ export const useLogout = () => {
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('user');
       queryClient.clear();
-      window.location.href = '/login';
+      navigate('/login', { replace: true });
     },
     onError: (error) => {
       console.error('Logout API error: ', error);
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('user');
       queryClient.clear();
-      window.location.href = '/login';
+      navigate('/login', { replace: true });
     },
   });
 };
