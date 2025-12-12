@@ -36,14 +36,14 @@ export const useLogout = () => {
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('user');
       queryClient.clear();
-      navigate('/login', { replace: true });
+      //navigate('/login', { replace: true });
     },
     onError: (error) => {
       console.error('Logout API error: ', error);
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('user');
       queryClient.clear();
-      navigate('/login', { replace: true });
+      //navigate('/login', { replace: true });
     },
   });
 };
