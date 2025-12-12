@@ -33,7 +33,7 @@ export const useLogout = () => {
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('user');
       queryClient.clear();
-      window.location.href = '/login';
+      window.location.href = '/home';
     },
   });
 };
