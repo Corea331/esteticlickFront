@@ -236,12 +236,15 @@ export const safelyExtendSession = async (minutes = 120) => {
   } catch (error) {
     console.error('Error al extender sesión:', error);
     
-    // Si el error es 401 (token expirado), limpiar y redirigir
+    // Si el error es 401 (token expirado), limpiar y recargar
     if (error.message.includes('401') || error.message.includes('No autenticado')) {
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('user');
       sessionStorage.removeItem('tokenExpiration');
-      window.location.href = '/login';
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
     
     return {
