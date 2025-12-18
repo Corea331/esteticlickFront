@@ -7,9 +7,24 @@
     <meta name="csrf-token" content="{{ csrf-token() }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <title>Esteticlick</title>
+
+    <!-- Base href importante para SPA -->
+    <base href="/">
+
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Script para manejar rutas en recarga -->
+    <script>
+      // Pequeño script para debug
+      console.log('Vite + React SPA loaded');
+      console.log('Current path:', window.location.pathname);
+      
+      // Si hay un error 404 de Vercel, este script puede ayudar
+      if (window.location.pathname !== '/' && performance.getEntriesByType('navigation')[0]?.type === 'reload') {
+        console.log('Page reload detected for SPA route');
+      }
+    </script>
   </body>
 </html>
