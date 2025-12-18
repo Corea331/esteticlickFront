@@ -18,7 +18,7 @@ const NavigationHandler = () => {
         return;
       }
 
-      console.log(`📍 Navegando a: ${to}`, { replace, state });
+      //console.log(`📍 Navegando a: ${to}`, { replace, state });
       
       try {
         if (replace) {
