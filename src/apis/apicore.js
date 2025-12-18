@@ -4,7 +4,7 @@ const API_BASE_URL = 'https://esteticlick.alwaysdata.net/api'
 
 const apiRequest = async (endpoint, options = {}) => {
   const token = sessionStorage.getItem('authToken');
-  console.log('API Request - Token:', token ? 'Present' : 'Missing');
+  //console.log('API Request - Token:', token ? 'Present' : 'Missing');
 
   const config = {
     ...options,
