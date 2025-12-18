@@ -1,6 +1,6 @@
 import { Modal, Form } from "react-bootstrap"
 import { useState } from "react"
-import { useCreateContactMessage } from '../../hooks/apihooks.js'
+import { useCreateMessage } from '../../hooks'
 import './modalcontacto.css'
 
 
@@ -13,7 +13,7 @@ function ModalContacto({ show, handleClose }) {
     phone: '', 
     message: '' });
   
-    const createContactMutation = useCreateContactMessage();
+    const createContactMutation = useCreateMessage();
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -47,7 +47,7 @@ function ModalContacto({ show, handleClose }) {
           
           <Form.Group className="mb-3">
             <Form.Control 
-            type="text"
+            type="email"
             placeholder="Email"
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}

@@ -8,9 +8,11 @@ import Layout from './components/layout/layout'
 import Home from './screens/home/home'
 import Login from './screens/login/login'
 import BusinessesPage from './screens/business/businesspage'
+import IntegratedDashoard from './screens/dashboard/integrateddashboard'
 import PrivateRoute from './components/routes/privateroute'
 import PublicOnlyRoute from './components/routes/publiconlyroute'
 import Unauthorized from './screens/unauthorized/unauthorized'
+import ServicesPage from './screens/services/servicespage.jsx'
 import './app.css'
 
 
@@ -26,6 +28,7 @@ function App() {
               {/* Rutas Públicas */}
               <Route path='/' element={<Layout><Home /></Layout>} />
               <Route path='/businesses' element={<Layout><BusinessesPage /></Layout>} />
+              <Route path='/services' element={<Layout><ServicesPage /></Layout>} />
 
               {/* Rutas públicas para no autenticados */}
               <Route path='/login' element={<Layout><PublicOnlyRoute><Login /></PublicOnlyRoute></Layout>} />
@@ -33,7 +36,10 @@ function App() {
               {/* Rutas privadas */}
               <Route path='/profile' element={<PrivateRoute><Layout><div>Perfil del Usuario</div></Layout></PrivateRoute>} />
               
-              <Route path='/admin' element={<PrivateRoute allowedRoles={['admin', 'owner']}><Layout><div>Panel de Administración</div></Layout></PrivateRoute>} />
+              <Route path='/dashboard' element={
+                <PrivateRoute allowedRoles={['admin', 'owner', 'editor', 'staff']}>
+                  <Layout><IntegratedDashoard /></Layout>
+                </PrivateRoute>} />
 
               {/* Ruta para no autorizados */}
               <Route path='/unauthorized' element={<Layout><Unauthorized /></Layout>} />

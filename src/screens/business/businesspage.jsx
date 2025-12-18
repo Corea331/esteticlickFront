@@ -1,5 +1,5 @@
 import GenericTable from '../../components/generictable/generictable'
-import { useBusinesses } from '../../hooks/apihooks'
+import { useBusinesses } from '../../hooks'
 import './businesspage.css'
 
 const BusinessesPage = () => {

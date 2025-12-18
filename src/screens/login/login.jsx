@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { useLogin } from '../../hooks/apihooks.js'
+import { useLogin } from '../../hooks'
 import { useAuth } from '../../context/authcontext'
 import { useAlert } from '../../context/alertcontext'
 import { processApiError } from '../../utils/alerthandler.js'
@@ -23,19 +23,24 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    if (!formData.email || !formData.password) {
+      showError('Por favor, completa todos los campos');
+      return;
+    }
+
     // Debug: Ver qué datos se están enviando
-    console.log('Enviando datos de login:', {
-      email: formData.email,
-      passwordLength: formData.password?.length || 0
-    });
+    // console.log('Enviando datos de login:', {
+    //   email: formData.email,
+    //   passwordLength: formData.password?.length || 0
+    // });
 
     try {
       const data = await loginMutation.mutateAsync(formData)
-      console.log('Login response:', JSON.stringify(data, null, 2));
+      // console.log('Login response:', JSON.stringify(data, null, 2));
 
-      const { access_token: token, user, expires_in } = data;
+      const { access_token: token, user} = data;
       
-      login(user, token, expires_in || 7200);
+      login(user, token);
 
       showSuccess(`¡Bienvenido/a ${user.name} ` || ` ${user.email}!`)
 

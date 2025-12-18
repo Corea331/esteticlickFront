@@ -1,5 +1,5 @@
 import {createContext, useContext, useReducer, useEffect, useCallback, useRef} from 'react'
-import {useUser, useLogout, useExtendSession, checkAuth} from '../hooks/apihooks'
+import {useUser, useLogout, useExtendSession, checkAuth} from '../hooks'
 import { useAlert } from './alertcontext'
 
 const initialState = {
@@ -15,13 +15,16 @@ const initialState = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
+      const userRoles = action.payload.user?.roles || [];
+      const mainRole = userRoles.length > 0 ? userRoles[0].name : null;
+
       return {
         ...state,
         user:action.payload.user,
         token: action.payload.token,
         isAuthenticated: true,
         isLoading: false,
-        role: action.payload.user?.role || null,
+        role: mainRole,
         sessionWarning: null,
       };
     case 'LOGOUT':
@@ -35,10 +38,13 @@ const authReducer = (state, action) => {
         isLoading: action.payload,
       };
     case 'UPDATE_USER':
+      const updatedRoles = action.payload?.roles || [];
+      const updatedRole = updatedRoles.length > 0 ? updatedRoles[0].name : state.role;
+
       return {
         ...state,
         user: action.payload,
-        role: action.payload?.role || state.role,
+        role: updatedRole,
       };
     case 'SET_SESSION_EXPIRATION':
       return {
@@ -71,7 +77,7 @@ export const AuthProvider = ({ children }) => {
   const { refetch: fetchUser } = useUser();
   const logoutMutation = useLogout();
   const extendSessionMutation = useExtendSession();
-  const alertFunctions = useAlert();
+  const { showInfo, showWarning, showSuccess } = useAlert() || {};
 
   // Ref para evitar multiples alarmas
   const warningShownRef = useRef(false);
@@ -93,8 +99,8 @@ export const AuthProvider = ({ children }) => {
       warningShownRef.current = false;
       lastWarningLevelRef.current = '';
 
-      if (alertFunctions.showInfo) {
-        alertFunctions.showInfo(message);
+      if (showInfo) {
+        showInfo(message);
       }
 
       // Recargar la página después de logout automático
@@ -102,12 +108,12 @@ export const AuthProvider = ({ children }) => {
         window.location.reload();
       }, 100);
     }
-  }, [logoutMutation, alertFunctions]);
+  }, [logoutMutation, showInfo]);
 
   // Mostrar advertencia simple de sesión
   const showSessionWarning = useCallback((minutesLeft) => {
-    if (alertFunctions.showWarning) {
-      alertFunctions.showWarning(
+    if (showWarning) {
+      showWarning(
         `Tu sesión expirará en ${minutesLeft} minutos.`,
         'Sesión por expirar',
         {
@@ -116,12 +122,12 @@ export const AuthProvider = ({ children }) => {
         }
       );
     }
-  }, [alertFunctions]);
+  }, [showWarning]);
 
   // Mostrar oferta para extender sesión
   const showExtendSessionOffer = useCallback((minutesLeft) => {
-    if (alertFunctions.showWarning) {
-      alertFunctions.showWarning(
+    if (showWarning) {
+      showWarning(
         `Tu sesión expirará en ${minutesLeft} minutos. ¿Deseas extenderla?`,
         'Extender sesión',
         {
@@ -153,7 +159,7 @@ export const AuthProvider = ({ children }) => {
         }
       );
     }
-  }, [alertFunctions, extendSessionMutation]);
+  }, [showWarning, extendSessionMutation]);
 
   // Escuchar eventos de token expirado desde api.js
   useEffect(() => {
@@ -191,8 +197,8 @@ export const AuthProvider = ({ children }) => {
           break;
 
         case 'IMMINENT':
-          if (alertFunctions.showWarning) {
-            alertFunctions.showWarning(
+          if (showWarning) {
+            showWarning(
               `¡Sesión a punto de expirar! ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'} restantes`,
               'Sesión por expirar',
               {
@@ -225,8 +231,8 @@ export const AuthProvider = ({ children }) => {
 
     const handleSessionExtended = (event) => {
       const { message } = event.detail || {};
-      if (alertFunctions.showSuccess) {
-        alertFunctions.showSuccess(message || 'Sesión extendida', 'Sesión activa');
+      if (showSuccess) {
+        showSuccess(message || 'Sesión extendida', 'Sesión activa');
       }
 
       dispatch({ type: 'CLEAR_SESSION_WARNING' });
@@ -251,8 +257,8 @@ export const AuthProvider = ({ children }) => {
         lastWarningLevelRef.current = '';
       }
 
-      if (alertFunctions.showSuccess) {
-        alertFunctions.showSuccess('Sesión renovada exitosamente');
+      if (showSuccess) {
+        showSuccess('Sesión renovada exitosamente');
       }
     };
 
@@ -271,7 +277,7 @@ export const AuthProvider = ({ children }) => {
       window.removeEventListener('session-update', handleSessionUpdate);
       window.removeEventListener('session-error', handleSessionError);
     };
-  }, [alertFunctions, handleAutoLogout, showExtendSessionOffer, showSessionWarning]);
+  }, [ handleAutoLogout, showExtendSessionOffer, showSessionWarning]);
 
   // Efecto ÚNICO para carga inicial y verificación de token
   useEffect(() => {
@@ -293,9 +299,9 @@ export const AuthProvider = ({ children }) => {
         });
 
         try {
-          const { data: freshUser, error } = await fetchUser();
+          const { data: freshUser } = await fetchUser();
 
-          if (error || !freshUser) {
+          if (!freshUser) {
             throw new Error('Token inválido o expirado');
           }
 
@@ -378,7 +384,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth debe usarse dentro de un AuthProvider');
   }
   return context;
 };
