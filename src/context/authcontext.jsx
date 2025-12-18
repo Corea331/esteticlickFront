@@ -1,5 +1,6 @@
-import {createContext, useContext, useReducer, useEffect, useCallback, useRef} from 'react'
-import {useUser, useLogout, useExtendSession, checkAuth} from '../hooks'
+import { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react'
+import { useUser, useLogout, useExtendSession, checkAuth } from '../hooks'
+import { redirectToLogin, redirectToHome } from '../utils/navigation.js'
 import { useAlert } from './alertcontext'
 
 const initialState = {
@@ -103,9 +104,9 @@ export const AuthProvider = ({ children }) => {
         showInfo(message);
       }
 
-      // Recargar la página después de logout automático
+      // Emitir evento para permitir navegación segura
       setTimeout(() => {
-        window.location.reload();
+        redirectToLogin('Tu sesión ha expirado');
       }, 100);
     }
   }, [logoutMutation, showInfo]);
@@ -351,9 +352,9 @@ export const AuthProvider = ({ children }) => {
       lastWarningLevelRef.current = '';
       dispatch({ type: 'LOGOUT' });
 
-      // Recargar la página después de logout manual
+      // Emitir evento para permitir navegación segura
       setTimeout(() => {
-        window.location.reload();
+        redirectToHome();
       }, 100);
     }
   }, [logoutMutation]);

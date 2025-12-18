@@ -1,4 +1,5 @@
 import GenericTable from '../../components/generictable/generictable'
+import { reloadPage } from '../../utils/navigation.js'
 import { useBusinesses } from '../../hooks'
 import './businesspage.css'
 
@@ -54,7 +55,7 @@ const BusinessesPage = () => {
       <div className="error-container">
         <h2>Error al cargar los negocios</h2>
         <p>{ error.message }</p>
-        <button onClick={() => window.location.reload()}>
+        <button onClick={reloadPage}>
           <i className="bi bi-arrow-clockwise"></i> Reintentar
         </button>
       </div>

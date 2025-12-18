@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import SearchBox from '../../components/searchbox/searchbox'
 import Accordion from '../../components/accordion/accordion'
 import GenericTable from '../../components/generictable/generictable'
+import { navigateTo } from '../../utils/navigation.js'
 import { useServices } from '../../hooks'
 import { useBusinesses } from '../../hooks'
 import './servicespage.css'
@@ -55,7 +56,7 @@ const ServicesPage = () => {
             emptyMessage="No se encontraron negocios para este servicio"
             onRowClick={(business) => {
               // Navegar a la página del negocio
-              window.location.href = `/business/${business.id}`;
+              navigateTo(`/business/${business.id}`);
             }}
           />
         ) : (

@@ -4,6 +4,7 @@ import { esteticlickQueryClient } from './apis/queryclient.js'
 import { AuthProvider } from './context/authcontext'
 import { AlertProvider } from './context/alertcontext'
 import AlertContainer from './components/ui/alert/alertcontainer'
+import NavigationHandler from './components/navigationhandler'
 import Layout from './components/layout/layout'
 import Home from './screens/home/home'
 import Login from './screens/login/login'
@@ -23,6 +24,7 @@ function App() {
       <AlertProvider>
         <AuthProvider>
           <Router>
+            <NavigationHandler />
             <AlertContainer />
             <Routes>
               {/* Rutas Públicas */}

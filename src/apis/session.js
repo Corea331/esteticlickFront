@@ -1,3 +1,4 @@
+import { redirectToLogin } from '../utils/navigation.js';
 import { apiRequest } from './apicore.js'
 
 export const sessionApi = {
@@ -24,6 +25,9 @@ export const sessionApi = {
         sessionStorage.removeItem('authToken');
         sessionStorage.removeItem('user');
         sessionStorage.removeItem('tokenExpiration');
+
+        redirectToLogin('Sesión expirada');
+
         return { 
           authenticated: false, 
           reason: 'token_invalid',
@@ -66,9 +70,7 @@ export const sessionApi = {
         sessionStorage.removeItem('user');
         sessionStorage.removeItem('tokenExpiration');
   
-        setTimeout(() => {
-          window.location.reload();
-        }, 100);
+        redirectToLogin('Sesión expirada');
       }
       
       return {
@@ -84,6 +86,8 @@ export const sessionApi = {
     sessionStorage.removeItem('authToken');
     sessionStorage.removeItem('user');
     sessionStorage.removeItem('tokenExpiration');
+
+    redirectToLogin('Sesión expirada');
   }
 };
 
@@ -92,7 +96,5 @@ window.addEventListener('token-expired', () => {
   console.log('Token expirado, limpiando sesión...');
   sessionApi.clear();
   
-  setTimeout(() => {
-    window.location.reload();
-  }, 100);
+  redirectToLogin('Sesión expirada');
 });
