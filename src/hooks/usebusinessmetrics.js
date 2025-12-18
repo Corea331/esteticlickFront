@@ -23,7 +23,7 @@ export const useCalculateMetrics = () => {
     mutationFn: ({ year, month }) => businessMetricsApi.calculateMetrics(year, month),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['businessMetrics'] });
-      console.log('Métricas calculadas exitosamente');
+      //console.log('Métricas calculadas exitosamente');
     },
     onError: (error) => {
       console.error('Error al calcular métricas:', error);
@@ -39,7 +39,7 @@ export const useCalculateOwnerMetrics = () => {
       businessMetricsApi.calculateOwnerMetrics(ownerId, year, month),
     onSuccess: (_, variables) => { 
       queryClient.invalidateQueries({ queryKey: ['ownerMetrics', variables.ownerId] });
-      console.log('Métricas del owner calculadas exitosamente');
+      //console.log('Métricas del owner calculadas exitosamente');
     },
     onError: (error) => {
       console.error('Error al calcular métricas del owner:', error);

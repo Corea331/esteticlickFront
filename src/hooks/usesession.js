@@ -17,8 +17,8 @@ export const useExtendSession = () => {
 
   return useMutation({
     mutationFn: sessionApi.extend,
-    onSuccess: (data) => {
-      console.log('Sesión extendida: ', data.message);
+    onSuccess: () => {
+      //console.log('Sesión extendida: ', data.message);
 
       // Invalidar la query de expiración para que se refresque
       queryClient.invalidateQueries(['session-expiration']);

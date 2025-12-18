@@ -23,7 +23,7 @@ export const useCreateUser = () => {
     mutationFn: (data) => usersApi.createUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      console.log('Usuario creado exitosamente');
+      //console.log('Usuario creado exitosamente');
     },
     onError: (error) => {
       console.error('Error al crear usuario:', error);

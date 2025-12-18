@@ -27,7 +27,7 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: authApi.logout,
     onSuccess: (data) => {
-      console.log('✅ Logout exitoso:', data);
+      //console.log('✅ Logout exitoso:', data);
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('user');
       queryClient.clear();
@@ -54,7 +54,7 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: authApi.register,
     onSuccess: (data) => {
-      console.log('Registro exitoso');
+      //console.log('Registro exitoso');
       if (data.access_token) {
         sessionStorage.setItem('authToken', data.access_token);
         sessionStorage.setItem('user', JSON.stringify(data.user));
