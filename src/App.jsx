@@ -14,6 +14,8 @@ import PrivateRoute from './components/routes/privateroute'
 import PublicOnlyRoute from './components/routes/publiconlyroute'
 import Unauthorized from './screens/unauthorized/unauthorized'
 import ServicesPage from './screens/services/servicespage.jsx'
+import Profile from './screens/profile/profile.jsx'
+import ProfileDebug from './profiledebug/profiledebug.jsx'
 import './app.css'
 
 
@@ -31,12 +33,13 @@ function App() {
               <Route path='/' element={<Layout><Home /></Layout>} />
               <Route path='/businesses' element={<Layout><BusinessesPage /></Layout>} />
               <Route path='/services' element={<Layout><ServicesPage /></Layout>} />
-
+              
               {/* Rutas públicas para no autenticados */}
               <Route path='/login' element={<Layout><PublicOnlyRoute><Login /></PublicOnlyRoute></Layout>} />
 
               {/* Rutas privadas */}
-              <Route path='/profile' element={<PrivateRoute><Layout><div>Perfil del Usuario</div></Layout></PrivateRoute>} />
+              <Route path='/profile' element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
+              <Route path='/profile-debug' element={<PrivateRoute><Layout><ProfileDebug /></Layout></PrivateRoute>} />
               
               <Route path='/dashboard' element={
                 <PrivateRoute allowedRoles={['admin', 'owner', 'editor', 'staff']}>

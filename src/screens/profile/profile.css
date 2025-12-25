@@ -1,0 +1,20 @@
+
+@import '../../styles/colors.css';
+
+/* Página principal del perfil */
+.profile-page {
+  background: var(--color-fondo);
+  min-height: calc(100vh - 200px);
+}
+
+/* Contenido principal */
+.profile-main-content {
+  padding: 2rem;
+}
+
+/* Responsive para contenido principal */
+@media (max-width: 768px) {
+  .profile-main-content {
+    padding: 1.5rem;
+  }
+}
