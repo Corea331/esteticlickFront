@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useProfile } from '../hooks/useprofile';
-import './profileDebug.css';
+import './profiledebug.css';
 
 const ProfileDebug = () => {
   const { profile, isProfileLoading, error, refetchProfile } = useProfile();
