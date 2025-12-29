@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { User, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../../context/authcontext';
 
 const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
-  const { updateProfile } = useAuth();
-  
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     email: initialData?.email || '',
@@ -17,12 +14,10 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
-    setSuccessMessage('');
     
     // Validación de contraseña
     if (formData.password && formData.password !== formData.password_confirmation) {
@@ -51,35 +46,14 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
         dataToSend.password_confirmation = formData.password_confirmation;
       }
       
-      // Llamada a la API real
-      const response = await updateProfile(dataToSend);
+      // Aquí iría la llamada a la API
+      // await updateProfile(dataToSend);
+      console.log('Datos a enviar:', dataToSend);
       
-      if (response.success) {
-        setSuccessMessage('Perfil actualizado correctamente');
-        
-        // Limpiar campos de contraseña
-        setFormData(prev => ({
-          ...prev,
-          password: '',
-          password_confirmation: ''
-        }));
-        
-        // Esperar un momento y luego llamar a onSuccess
-        setTimeout(() => {
-          if (onSuccess) onSuccess();
-        }, 1500);
-      } else {
-        setErrors({ general: response.message || 'Error al actualizar el perfil' });
-      }
+      onSuccess();
     } catch (error) {
       console.error('Error al actualizar perfil:', error);
-      
-      // Manejar errores específicos del backend
-      if (error.response?.data?.errors) {
-        setErrors(error.response.data.errors);
-      } else {
-        setErrors({ general: error.message || 'Error al guardar cambios. Intenta nuevamente.' });
-      }
+      setErrors({ general: error.message || 'Error al guardar cambios' });
     } finally {
       setIsSubmitting(false);
     }
@@ -88,140 +62,143 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
     // Limpiar error cuando el usuario escribe
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
-    if (errors.general) {
-      setErrors(prev => ({ ...prev, general: null }));
-    }
+  };
+
+  // Generar IDs únicos para los campos
+  const fieldIds = {
+    name: 'profile-name',
+    email: 'profile-email',
+    phone: 'profile-phone',
+    password: 'profile-password',
+    password_confirmation: 'profile-password-confirmation'
   };
 
   // Versión compacta
   if (compact) {
     return (
       <form onSubmit={handleSubmit} className="profile-form">
-        {successMessage && (
-          <div className="alert alert-success">{successMessage}</div>
-        )}
-        
-        {errors.general && (
-          <div className="alert alert-danger">{errors.general}</div>
-        )}
-
         <div className="mb-3">
-          <label for='name' className="form-label">
+          <label htmlFor={fieldIds.name} className="form-label">
             <User size={16} className="me-2" />
             Nombre completo
           </label>
           <input
             type="text"
+            id={fieldIds.name}
             name="name"
-            className={`form-control ${errors.name ? 'is-invalid' : ''}`}
+            className="form-control"
             value={formData.name}
             onChange={handleChange}
             required
-            disabled={isSubmitting}
+            autoComplete="name"
+            aria-describedby="nameHelp"
           />
-          {errors.name && (
-            <div className="invalid-feedback">{errors.name}</div>
-          )}
+          <div id="nameHelp" className="form-text">Tu nombre completo</div>
         </div>
 
         <div className="mb-3">
-          <label for='email' className="form-label">
+          <label htmlFor={fieldIds.email} className="form-label">
             <Mail size={16} className="me-2" />
             Email
           </label>
           <input
             type="email"
+            id={fieldIds.email}
             name="email"
-            className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+            className="form-control"
             value={formData.email}
             onChange={handleChange}
             required
-            disabled={isSubmitting}
+            autoComplete="email"
+            aria-describedby="emailHelp"
           />
-          {errors.email && (
-            <div className="invalid-feedback">{errors.email}</div>
-          )}
+          <div id="emailHelp" className="form-text">Tu dirección de correo electrónico</div>
         </div>
 
         <div className="mb-3">
-          <label for='phone' className="form-label">
+          <label htmlFor={fieldIds.phone} className="form-label">
             <Phone size={16} className="me-2" />
             Teléfono
           </label>
           <input
             type="tel"
+            id={fieldIds.phone}
             name="phone"
-            className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
+            className="form-control"
             value={formData.phone}
             onChange={handleChange}
+            autoComplete="tel"
             placeholder="Opcional"
-            disabled={isSubmitting}
+            aria-describedby="phoneHelp"
           />
-          {errors.phone && (
-            <div className="invalid-feedback">{errors.phone}</div>
-          )}
+          <div id="phoneHelp" className="form-text">Número de teléfono (opcional)</div>
         </div>
 
         <div className="mb-3">
-          <label for='password' className="form-label">
+          <label htmlFor={fieldIds.password} className="form-label">
             <Lock size={16} className="me-2" />
             Nueva contraseña
           </label>
           <div className="input-group">
             <input
               type={showPassword ? "text" : "password"}
+              id={fieldIds.password}
               name="password"
-              className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+              className="form-control"
               value={formData.password}
               onChange={handleChange}
+              autoComplete="new-password"
               placeholder="Dejar en blanco para no cambiar"
-              disabled={isSubmitting}
+              aria-describedby="passwordHelp"
             />
             <button
               type="button"
               className="btn btn-outline-secondary"
               onClick={() => setShowPassword(!showPassword)}
-              disabled={isSubmitting}
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
             >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
+          <div id="passwordHelp" className="form-text">Dejar vacío si no quieres cambiar la contraseña</div>
           {errors.password && (
-            <div className="invalid-feedback">{errors.password}</div>
+            <div className="text-danger small mt-1">{errors.password}</div>
           )}
         </div>
 
         <div className="mb-4">
-          <label for='password_confirmation' className="form-label">
+          <label htmlFor={fieldIds.password_confirmation} className="form-label">
             <Lock size={16} className="me-2" />
             Confirmar contraseña
           </label>
           <div className="input-group">
             <input
               type={showConfirmPassword ? "text" : "password"}
+              id={fieldIds.password_confirmation}
               name="password_confirmation"
-              className={`form-control ${errors.password_confirmation ? 'is-invalid' : ''}`}
+              className="form-control"
               value={formData.password_confirmation}
               onChange={handleChange}
+              autoComplete="new-password"
               placeholder="Confirmar nueva contraseña"
-              disabled={isSubmitting}
+              aria-describedby="passwordConfirmationHelp"
             />
             <button
               type="button"
               className="btn btn-outline-secondary"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              disabled={isSubmitting}
+              aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
             >
               {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
+          <div id="passwordConfirmationHelp" className="form-text">Repite la contraseña para confirmar</div>
           {errors.password_confirmation && (
-            <div className="invalid-feedback">{errors.password_confirmation}</div>
+            <div className="text-danger small mt-1">{errors.password_confirmation}</div>
           )}
         </div>
 
@@ -230,12 +207,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
           className="btn btn-primary w-100"
           disabled={isSubmitting}
         >
-          {isSubmitting ? (
-            <>
-              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              Guardando...
-            </>
-          ) : 'Guardar cambios'}
+          {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
         </button>
       </form>
     );
@@ -244,77 +216,71 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
   // Versión completa (para tab de edición)
   return (
     <form onSubmit={handleSubmit} className="profile-form-full">
-      {successMessage && (
-        <div className="alert alert-success alert-dismissible fade show" role="alert">
-          {successMessage}
-          <button type="button" className="btn-close" onClick={() => setSuccessMessage('')}></button>
-        </div>
-      )}
-      
       {errors.general && (
-        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+        <div className="alert alert-danger" role="alert">
           {errors.general}
-          <button type="button" className="btn-close" onClick={() => setErrors(prev => ({ ...prev, general: null }))}></button>
         </div>
       )}
 
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label for='name' className="form-label">
+          <label htmlFor={fieldIds.name} className="form-label">
             <User size={16} className="me-2" />
             Nombre completo *
           </label>
           <input
             type="text"
+            id={fieldIds.name}
             name="name"
-            className={`form-control ${errors.name ? 'is-invalid' : ''}`}
+            className="form-control"
             value={formData.name}
             onChange={handleChange}
             required
-            disabled={isSubmitting}
+            autoComplete="name"
+            aria-required="true"
+            aria-describedby="nameHelpFull"
           />
-          {errors.name && (
-            <div className="invalid-feedback">{errors.name}</div>
-          )}
+          <div id="nameHelpFull" className="form-text">Tu nombre completo como aparece en tu documento</div>
         </div>
 
         <div className="col-md-6 mb-3">
-          <label for='email' className="form-label">
+          <label htmlFor={fieldIds.email} className="form-label">
             <Mail size={16} className="me-2" />
             Email *
           </label>
           <input
             type="email"
+            id={fieldIds.email}
             name="email"
-            className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+            className="form-control"
             value={formData.email}
             onChange={handleChange}
             required
-            disabled={isSubmitting}
+            autoComplete="email"
+            aria-required="true"
+            aria-describedby="emailHelpFull"
           />
-          {errors.email && (
-            <div className="invalid-feedback">{errors.email}</div>
-          )}
+          <div id="emailHelpFull" className="form-text">Tu dirección de correo electrónico principal</div>
         </div>
       </div>
 
       <div className="mb-3">
-        <label for='phone' className="form-label">
+        <label htmlFor={fieldIds.phone} className="form-label">
           <Phone size={16} className="me-2" />
           Teléfono
         </label>
         <input
           type="tel"
+          id={fieldIds.phone}
           name="phone"
-          className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
+          className="form-control"
           value={formData.phone}
           onChange={handleChange}
+          autoComplete="tel"
           placeholder="Opcional"
-          disabled={isSubmitting}
+          aria-describedby="phoneHelpFull"
         />
-        {errors.phone && (
-          <div className="invalid-feedback">{errors.phone}</div>
-        )}
+        <div id="phoneHelpFull" className="form-text">Número de teléfono con código de país (opcional)</div>
       </div>
 
       <div className="card border mt-4 mb-4">
@@ -328,54 +294,64 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
         <div className="card-body">
           <div className="row">
             <div className="col-md-6 mb-3">
-              <label for='password' className="form-label">Nueva contraseña</label>
+              <label htmlFor={fieldIds.password} className="form-label">
+                Nueva contraseña
+              </label>
               <div className="input-group">
                 <input
                   type={showPassword ? "text" : "password"}
+                  id={fieldIds.password}
                   name="password"
-                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                  className="form-control"
                   value={formData.password}
                   onChange={handleChange}
+                  autoComplete="new-password"
                   placeholder="Mínimo 6 caracteres"
-                  disabled={isSubmitting}
+                  aria-describedby="passwordHelpFull"
                 />
                 <button
                   type="button"
                   className="btn btn-outline-secondary"
                   onClick={() => setShowPassword(!showPassword)}
-                  disabled={isSubmitting}
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              <div id="passwordHelpFull" className="form-text">Mínimo 6 caracteres</div>
               {errors.password && (
-                <div className="invalid-feedback">{errors.password}</div>
+                <div className="invalid-feedback d-block">{errors.password}</div>
               )}
             </div>
 
             <div className="col-md-6 mb-3">
-              <label for='password_confirmation' className="form-label">Confirmar contraseña</label>
+              <label htmlFor={fieldIds.password_confirmation} className="form-label">
+                Confirmar contraseña
+              </label>
               <div className="input-group">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
+                  id={fieldIds.password_confirmation}
                   name="password_confirmation"
-                  className={`form-control ${errors.password_confirmation ? 'is-invalid' : ''}`}
+                  className="form-control"
                   value={formData.password_confirmation}
                   onChange={handleChange}
+                  autoComplete="new-password"
                   placeholder="Repite la contraseña"
-                  disabled={isSubmitting}
+                  aria-describedby="passwordConfirmHelpFull"
                 />
                 <button
                   type="button"
                   className="btn btn-outline-secondary"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  disabled={isSubmitting}
+                  aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
                   {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              <div id="passwordConfirmHelpFull" className="form-text">Debe coincidir con la contraseña anterior</div>
               {errors.password_confirmation && (
-                <div className="invalid-feedback">{errors.password_confirmation}</div>
+                <div className="invalid-feedback d-block">{errors.password_confirmation}</div>
               )}
             </div>
           </div>
