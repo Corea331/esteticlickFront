@@ -51,7 +51,7 @@ export const useImageUpload = () => {
 
     console.log('📤 Subiendo a:', `${baseUrl}/${path}`);
 
-    const response = await fetch(`${baseUrl}${path}`, {
+    const response = await fetch(`${baseUrl}/${path}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
