@@ -7,10 +7,10 @@ export const useImageUpload = () => {
   const { user, updateUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
 
-  // Validar archivo localmente - CAMBIAR maxSizeMB DE 5 A 2
+  // Validar archivo localmente
   const validateImage = (file, options = {}) => {
     const defaultOptions = {
-      maxSizeMB: 2, // ← CAMBIADO DE 5 A 2
+      maxSizeMB: 2,
       allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'],
       ...options
     };
@@ -37,6 +37,21 @@ export const useImageUpload = () => {
         extension: file.name.split('.').pop().toLowerCase()
       }
     };
+  };
+
+  // Función para generar un hash simple del email
+  const generateEmailHash = (email) => {
+    if (!email) return 'default';
+    
+    // Normalizar el email
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Hacerlo URL-safe
+    return normalizedEmail
+    .replace(/@/g, '-at-')
+    .replace(/\./g, '-dot-')
+    .replace(/[^a-zA-Z0-9-_]/g, '')
+    .substring(0, 50)
   };
 
   // ============ SUBIR AVATAR ============
@@ -282,11 +297,11 @@ export const useImageUpload = () => {
     
     // Fallback: Generar uno por email (como en el backend)
     if (userData.email) {
-      const emailHash = md5(strtolower(trim(userData.email)));
-      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${emailHash}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+      const emailSeed = generateEmailHash(userData.email);
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${emailSeed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
     }
     
-    return null;
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=default&backgroundColor=b6e3f4,c0aede,d1d4f9`;
   };
 
   return {
