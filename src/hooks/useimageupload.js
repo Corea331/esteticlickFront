@@ -72,10 +72,16 @@ export const useImageUpload = () => {
       }
 
       const result = await response.json();
+      console.log('✅ Avatar upload response:', result); // Debug
       
       // Actualizar usuario en contexto
-      if (updateUser && result.user) {
-        updateUser(result.user);
+      if (updateUser) {
+        const updatedUser = {
+          ...user,
+          image_url: result.image_url || result.avatar_url,
+          avatar_url: result.avatar_url || result.image_url,
+        };
+        updateUser(updatedUser);
       }
 
       showSuccess('Foto de perfil actualizada correctamente');
@@ -91,7 +97,7 @@ export const useImageUpload = () => {
   };
 
   // ============ ELIMINAR AVATAR ============
-  const deleteAvatar = async (imageUrl) => {
+  const deleteAvatar = async () => {
     try {
       const token = sessionStorage.getItem('authToken');
       
@@ -110,10 +116,16 @@ export const useImageUpload = () => {
       }
 
       const result = await response.json();
+      console.log('✅ Avatar delete response:', result); // Debug
       
       // Actualizar usuario en contexto
-      if (updateUser && result.user) {
-        updateUser(result.user);
+      if (updateUser) {
+        const updatedUser = {
+          ...user,
+          image_url: null,
+          avatar_url: null,
+        };
+        updateUser(updatedUser);
       }
 
       showSuccess('Foto eliminada. Se mostrará el avatar por defecto');
@@ -225,8 +237,19 @@ export const useImageUpload = () => {
   // ============ UTILIDADES ============
   const isCustomImage = (imageUrl) => {
     if (!imageUrl) return false;
-    // Ahora las imágenes personalizadas vienen de esteticlick.alwaysdata.net/storage/
-    return imageUrl.includes('esteticlick.alwaysdata.net/storage/');
+
+    // Verificar si es imagen por defecto (DiceBear)
+    const isDefaultAvatar = 
+      imageUrl.includes('api.dicebear.com') ||
+      imageUrl.includes('dicebear') ||
+      imageUrl.includes('avatars') || // Solo si viene de DiceBear
+      (imageUrl.includes('seed=') && imageUrl.includes('dicebear'));
+    
+    // Si es DiceBear, no es custom
+    if (isDefaultAvatar) return false;
+
+    // Cualquier otra url se considera custom
+    return true;
   };
 
   const getAvatarUrl = (userData = user) => {
@@ -236,9 +259,34 @@ export const useImageUpload = () => {
     if (userData.image_url && isCustomImage(userData.image_url)) {
       return userData.image_url;
     }
+
+    // Prioridad 2: avatar_url de Laravel Storage
+    if (userData.avatar_url && isCustomImage(userData.avatar_url)) {
+      return userData.avatar_url;
+    }
+
+    // Prioridad 3: profile_image del accessor (backend lo devuelve)
+    if (userData.profile_image) {
+      return userData.profile_image;
+    }
     
-    // Avatar por defecto (DiceBear)
-    return userData.image_url;
+    // Prioridad 4: image_url aunque sea DiceBear
+    if (userData.image_url) {
+      return userData.image_url;
+    }
+    
+    // Prioridad 5: avatar_url aunque sea DiceBear
+    if (userData.avatar_url) {
+      return userData.avatar_url;
+    }
+    
+    // Fallback: Generar uno por email (como en el backend)
+    if (userData.email) {
+      const emailHash = md5(strtolower(trim(userData.email)));
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${emailHash}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+    }
+    
+    return null;
   };
 
   return {
