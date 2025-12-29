@@ -15,7 +15,6 @@ import PublicOnlyRoute from './components/routes/publiconlyroute'
 import Unauthorized from './screens/unauthorized/unauthorized'
 import ServicesPage from './screens/services/servicespage.jsx'
 import Profile from './screens/profile/profile.jsx'
-import ProfileDebug from './profiledebug/profiledebug.jsx'
 import './app.css'
 
 
@@ -39,7 +38,6 @@ function App() {
 
               {/* Rutas privadas */}
               <Route path='/profile' element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
-              <Route path='/profile-debug' element={<PrivateRoute><Layout><ProfileDebug /></Layout></PrivateRoute>} />
               
               <Route path='/dashboard' element={
                 <PrivateRoute allowedRoles={['admin', 'owner', 'editor', 'staff']}>

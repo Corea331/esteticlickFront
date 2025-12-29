@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useProfile } from '../../hooks';
-import { useAvatar } from '../../hooks';
+import { useState, useEffect } from 'react';
+import { apiRequest } from '../../apis/apicore';
+import { useAuth } from '../../context/authcontext';
+import { useImageUpload } from '../../hooks/useimageupload';
 import ProfileLayout from '../../components/profile/components/profilelayout/profilelayout.jsx';
 import ProfileSidebar from '../../components/profile/components/profilesidebar/profilesidebar.jsx';
 import ProfileInfo from '../../components/profile/components/profileinfo/profileinfo.jsx';
@@ -10,10 +11,43 @@ import './profile.css';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('info');
-  const { profile, isProfileLoading, refetchProfile } = useProfile();
-  const { getAvatarUrl } = useAvatar();
+  const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [error, setError] = useState(null);
+  
+  const { user: authUser, updateUser } = useAuth();
+  const { getAvatarUrl } = useImageUpload();
 
-  const currentAvatar = getAvatarUrl(profile);
+  // Cargar datos del perfil
+  useEffect(() => {
+    const loadProfile = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // Si ya tenemos datos del usuario en auth, usamos esos
+        if (authUser) {
+          setProfile(authUser);
+        } else {
+          // Si no, hacemos una petición para obtener datos completos
+          const userData = await apiRequest('/user');
+          setProfile(userData);
+        }
+      } catch (error) {
+        console.error('Error cargando perfil:', error);
+        setError(error.message || 'No se pudo cargar el perfil');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (authUser) {
+      setProfile(authUser);
+      setIsLoading(false);
+    } else {
+      loadProfile();
+    }
+  }, [authUser]);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'No disponible';
@@ -25,7 +59,27 @@ const Profile = () => {
     });
   };
 
-  if (isProfileLoading) {
+  const refetchProfile = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const userData = await apiRequest('/user');
+      setProfile(userData);
+      
+      // Actualizar también en el contexto de auth
+      if (updateUser) {
+        updateUser(userData);
+      }
+    } catch (error) {
+      console.error('Error recargando perfil:', error);
+      setError(error.message || 'Error al recargar el perfil');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
     return (
       <div className="profile-page">
         <div className="container py-5">
@@ -42,12 +96,12 @@ const Profile = () => {
     );
   }
 
-  if (!profile && !isProfileLoading) {
+  if (error && !profile) {
     return (
       <div className="profile-page">
         <div className="container py-5">
           <div className="text-center">
-            <h4 className="text-muted mb-3">No se pudo cargar el perfil</h4>
+            <h4 className="text-muted mb-3">{error}</h4>
             <button 
               onClick={refetchProfile} 
               className="btn btn-primary"
@@ -59,6 +113,36 @@ const Profile = () => {
       </div>
     );
   }
+
+  if (!profile && !isLoading) {
+    return (
+      <div className="profile-page">
+        <div className="container py-5">
+          <div className="text-center">
+            <h4 className="text-muted mb-3">No se encontraron datos del perfil</h4>
+            <button 
+              onClick={refetchProfile} 
+              className="btn btn-primary"
+            >
+              Cargar datos
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentAvatar = getAvatarUrl(profile);
+
+  const handleProfileUpdate = () => {
+    refetchProfile();
+    setActiveTab('info');
+  };
+
+  const handleAvatarUpdate = () => {
+    refetchProfile();
+    setActiveTab('info');
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -75,10 +159,7 @@ const Profile = () => {
         return (
           <ProfileEdit
             profile={profile}
-            onSuccess={() => {
-              refetchProfile();
-              setActiveTab('info');
-            }}
+            onSuccess={handleProfileUpdate}
             onCancel={() => setActiveTab('info')}
           />
         );
@@ -87,10 +168,7 @@ const Profile = () => {
         return (
           <ProfileAvatar
             currentAvatar={currentAvatar}
-            onUploadComplete={() => {
-              refetchProfile();
-              setActiveTab('info');
-            }}
+            onUploadComplete={handleAvatarUpdate}
             onCancel={() => setActiveTab('info')}
           />
         );
@@ -109,23 +187,28 @@ const Profile = () => {
           <p className="text-muted mb-0">Administra tu información personal</p>
         </div>
 
-        {/* Layout interno con tabs */}
-        <ProfileLayout
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        >
-          {/* Sidebar izquierda - Foto tipo fichero */}
-          <ProfileSidebar
-            profile={profile}
-            currentAvatar={currentAvatar}
-            formatDate={formatDate}
-          />
-
-          {/* Contenido principal - Cambia según tab activo */}
-          <div className="profile-main-content">
-            {renderTabContent()}
+        {/* Contenedor principal con sidebar y layout */}
+        <div className="profile-container">
+          {/* Sidebar a la izquierda */}
+          <div className="profile-sidebar-wrapper">
+            <ProfileSidebar
+              profile={profile}
+              currentAvatar={currentAvatar}
+              formatDate={formatDate}
+            />
           </div>
-        </ProfileLayout>
+
+          {/* Layout con tabs a la derecha */}
+          <div className="profile-layout-wrapper">
+            <ProfileLayout
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            >
+              {/* Solo el contenido del tab activo va aquí */}
+              {renderTabContent()}
+            </ProfileLayout>
+          </div>
+        </div>
       </div>
     </div>
   );

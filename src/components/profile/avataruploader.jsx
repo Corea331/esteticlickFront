@@ -1,158 +1,208 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { FilePond, registerPlugin } from 'react-filepond';
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
+import FilePondPluginImageValidateSize from 'filepond-plugin-image-validate-size';
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import 'filepond/dist/filepond.min.css';
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import { 
-  Upload, User, X, Trash2, Image as ImageIcon, Shield, Building, Users, Info
+  User, 
+  Trash2, 
+  Image as ImageIcon 
 } from 'lucide-react';
-import { useAvatar } from '../../hooks';
-import { useAlert } from '../../context/alertcontext';
+import { useImageUpload } from '../../hooks/useimageupload';
 
-const AvatarUploader = ({ currentAvatar, onUploadComplete }) => {
-  const [previewImage, setPreviewImage] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const fileInputRef = useRef(null);
-  
+registerPlugin(
+  FilePondPluginImagePreview,
+  FilePondPluginImageValidateSize,
+  FilePondPluginFileValidateType
+);
+
+const AvatarUploader = ({ onUploadComplete, compact = false }) => {
   const { 
+    getAvatarUrl, 
     uploadAvatar, 
     deleteAvatar, 
     isUploading, 
-    isDeleting, 
-    isCustomAvatar,
-    validateFile,
-    getCurrentUserInfo 
-  } = useAvatar();
+    isCustomImage,
+    user,
+    userType
+  } = useImageUpload();
   
-  const { showError } = useAlert();
-  
-  const userInfo = getCurrentUserInfo();
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [filepondFiles, setFilepondFiles] = useState([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    
-    if (!file) return;
-
-    // Validar archivo
-    const validation = validateFile(file);
-    if (!validation.isValid) {
-      showError(validation.errors.join('. '));
-      return;
+  // Cargar avatar actual
+  useEffect(() => {
+    if (user) {
+      const url = getAvatarUrl(user);
+      setAvatarUrl(url);
     }
+  }, [user, getAvatarUrl]);
 
-    // Crear preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreviewImage(e.target.result);
-    };
-    reader.readAsDataURL(file);
-
-    setSelectedFile(file);
+  // Configuración de FilePond
+  const pondConfig = {
+    allowMultiple: false,
+    maxFiles: 1,
+    name: 'avatar',
+    labelIdle: compact 
+      ? '<span class="text-muted">Arrastra o selecciona</span>'
+      : 'Arrastra y suelta tu foto o <span class="filepond--label-action">selecciona</span>',
+    labelFileProcessing: 'Subiendo...',
+    labelFileProcessingComplete: '¡Subida completa!',
+    labelFileProcessingError: 'Error al subir',
+    labelTapToCancel: 'Toca para cancelar',
+    labelTapToRetry: 'Toca para reintentar',
+    acceptedFileTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+    maxFileSize: '5MB',
+    imagePreviewHeight: 150,
+    stylePanelLayout: compact ? 'compact circle' : 'integrated',
+    styleLoadIndicatorPosition: 'center bottom',
+    styleProgressIndicatorPosition: 'right bottom',
+    styleButtonRemoveItemPosition: 'left bottom',
+    styleButtonProcessItemPosition: 'right bottom',
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      showError('Por favor seleccione una imagen');
+  // Manejar subida de FilePond
+  const handleFilePondProcess = async (error, file) => {
+    if (error) {
+      console.error('FilePond error:', error);
       return;
     }
-
+    
     try {
-      const result = await uploadAvatar(selectedFile);
+      const result = await uploadAvatar(file.file);
       
-      if (onUploadComplete) {
-        onUploadComplete(result.url);
+      if (result?.image_url || result?.user?.image_url) {
+        const newUrl = result.image_url || result.user.image_url;
+        setAvatarUrl(newUrl);
+        if (onUploadComplete) {
+          onUploadComplete(newUrl);
+        }
       }
       
-      resetForm();
-      
+      file.setMetadata('uploaded', true);
     } catch (err) {
-      console.error('Error uploading avatar:', err);
-      resetForm();
+      file.setMetadata('uploadError', err.message);
     }
   };
 
-  const handleRemoveAvatar = async () => {
-    if (!currentAvatar) return;
-
+  // Manejar eliminación de avatar
+  const handleDeleteAvatar = async () => {
+    if (!avatarUrl || !isCustomImage(avatarUrl)) return;
+    
     try {
-      await deleteAvatar(currentAvatar);
+      await deleteAvatar(avatarUrl);
+      setAvatarUrl(getAvatarUrl(user)); // Volver al default
+      setFilepondFiles([]);
+      setShowDeleteConfirm(false);
       
       if (onUploadComplete) {
         onUploadComplete(null);
       }
-      
-      resetForm();
-    } catch (err) {
-      console.error('Error removing avatar:', err);
+    } catch (error) {
+      console.error('Error deleting avatar:', error);
     }
   };
 
-  const handleCancel = () => {
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setPreviewImage(null);
-    setSelectedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  // Determinar si mostrar botón de eliminar
-  const showDeleteButton = currentAvatar && isCustomAvatar(currentAvatar);
-
-  // Obtener icono según tipo de usuario
-  const getUserIcon = () => {
-    switch(userInfo.userType) {
-      case 'admin': return <Shield size={20} className="me-2 text-danger" />;
-      case 'owner': return <Building size={20} className="me-2 text-primary" />;
-      case 'staff': return <Users size={20} className="me-2 text-success" />;
-      default: return <User size={20} className="me-2 text-secondary" />;
-    }
-  };
-
-  return (
-    <div className="card border-0 shadow-sm">
-      <div className="card-header bg-white border-0">
-        <div className="d-flex align-items-center justify-content-between">
-          <h5 className="mb-0 d-flex align-items-center">
-            {getUserIcon()}
-            Foto de Perfil
-          </h5>
-          <span className="badge bg-info">Vercel Blob</span>
-        </div>
-      </div>
-      
-      <div className="card-body">
-        {/* Información del usuario */}
-        <div className="alert alert-light mb-4">
-          <div className="d-flex align-items-start">
-            <Info size={16} className="me-2 text-primary mt-1 flex-shrink-0" />
-            <div>
-              <div className="d-flex align-items-center mb-1">
-                <strong className="me-2">Tipo de usuario:</strong>
-                <span className="badge bg-primary">{userInfo.userTypeLabel}</span>
+  // Versión compacta
+  if (compact) {
+    return (
+      <div className="avatar-uploader-compact">
+        <div className="d-flex align-items-center">
+          {/* Avatar preview */}
+          <div className="position-relative me-3">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="Avatar"
+                className="rounded-circle border"
+                style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+              />
+            ) : (
+              <div className="rounded-circle border d-flex align-items-center justify-content-center bg-light"
+                  style={{ width: '60px', height: '60px' }}>
+                <User size={24} className="text-secondary" />
               </div>
-              
-              {userInfo.businessId && (
-                <div className="d-flex align-items-center mb-1">
-                  <strong className="me-2">Negocio asociado:</strong>
-                  <small className="text-muted">ID: {userInfo.businessId}</small>
-                </div>
-              )}
-              
-              <div className="mt-2">
-                <small className="text-muted">
-                  Tu avatar se organizará automáticamente en la carpeta correspondiente
-                </small>
+            )}
+            
+            {isCustomImage(avatarUrl) && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="btn btn-sm btn-danger position-absolute top-0 end-0 translate-middle"
+                style={{ width: '20px', height: '20px', padding: 0 }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+          
+          {/* FilePond compacto */}
+          <div className="flex-grow-1">
+            <FilePond
+              {...pondConfig}
+              files={filepondFiles}
+              onupdatefiles={setFilepondFiles}
+              onprocessfile={handleFilePondProcess}
+              server={{
+                process: () => {
+                  return {
+                    abort: () => {}
+                  };
+                }
+              }}
+            />
+            
+            <small className="text-muted d-block mt-1">
+              JPG, PNG, WebP • Máx 5MB
+            </small>
+          </div>
+        </div>
+        
+        {/* Confirmación de eliminación */}
+        {showDeleteConfirm && (
+          <div className="alert alert-warning mt-2 p-2">
+            <div className="d-flex justify-content-between align-items-center">
+              <small>¿Eliminar foto de perfil?</small>
+              <div>
+                <button
+                  onClick={handleDeleteAvatar}
+                  className="btn btn-sm btn-danger me-1"
+                >
+                  Sí
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="btn btn-sm btn-outline-secondary"
+                >
+                  No
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        )}
+      </div>
+    );
+  }
 
-        {/* Avatar actual/preview */}
-        <div className="mb-4 text-center">
+  // Versión completa
+  return (
+    <div className="card border-0 shadow-sm">
+      <div className="card-header bg-white border-0">
+        <h5 className="mb-0 d-flex align-items-center">
+          <User size={20} className="me-2 text-primary" />
+          Foto de Perfil
+        </h5>
+      </div>
+      
+      <div className="card-body">
+        {/* Avatar actual */}
+        <div className="text-center mb-4">
           <div className="position-relative d-inline-block">
-            {previewImage || currentAvatar ? (
+            {avatarUrl ? (
               <img
-                src={previewImage || currentAvatar}
+                src={avatarUrl}
                 alt="Avatar"
                 className="rounded-circle border"
                 style={{ width: '150px', height: '150px', objectFit: 'cover' }}
@@ -165,125 +215,84 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete }) => {
             )}
             
             {/* Badge de estado */}
-            {currentAvatar && !previewImage && (
-              <span className="position-absolute top-0 end-0 translate-middle badge bg-primary">
-                {isCustomAvatar(currentAvatar) ? 'Personalizada' : 'Por defecto'}
-              </span>
-            )}
+            <span className="position-absolute top-0 end-0 translate-middle badge bg-primary">
+              {isCustomImage(avatarUrl) ? 'Personalizada' : 'Por defecto'}
+            </span>
           </div>
+          
+          {userType && (
+            <div className="mt-2">
+              <small className="text-muted">
+                Tipo: <span className="text-capitalize">{userType.replace('_', ' ')}</span>
+              </small>
+            </div>
+          )}
         </div>
 
-        {/* Información técnica */}
+        {/* Información */}
         <div className="alert alert-info mb-4">
-          <div className="d-flex">
-            <ImageIcon size={16} className="me-2 flex-shrink-0 mt-1" />
+          <div className="d-flex align-items-start">
             <div>
-              <small>
-                <strong>Formatos permitidos:</strong> JPG, PNG, WebP<br />
-                <strong>Tamaño máximo:</strong> 5MB<br />
-                <strong>Ubicación automática:</strong> 
-                {userInfo.businessId 
-                  ? ` businesses/${userInfo.businessId}/` 
-                  : ` ${userInfo.userType}s/${userInfo.userId}/`}
+              <h6 className="mb-2">Información de subida</h6>
+              <div className="d-flex flex-wrap gap-3 mb-2">
+                <small className="d-flex align-items-center">
+                  <span className="text-success me-1">✓</span>
+                  Formatos: JPG, PNG, WebP
+                </small>
+                <small className="d-flex align-items-center">
+                  <span className="text-success me-1">✓</span>
+                  Tamaño máximo: 5MB
+                </small>
+                <small className="d-flex align-items-center">
+                  <span className="text-success me-1">✓</span>
+                  Se guarda en Vercel Blob
+                </small>
+              </div>
+              <small className="text-muted">
+                Al eliminar tu foto, se mostrará el avatar por defecto generado por el sistema.
               </small>
             </div>
           </div>
         </div>
 
-        {/* Controles de subida */}
-        <div className="mb-3">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            className="form-control"
-            disabled={isUploading || isDeleting}
+        {/* FilePond */}
+        <div className="mb-4">
+          <FilePond
+            {...pondConfig}
+            files={filepondFiles}
+            onupdatefiles={setFilepondFiles}
+            onprocessfile={handleFilePondProcess}
+            server={{
+              process: () => {
+                return {
+                  abort: () => {}
+                };
+              }
+            }}
           />
         </div>
 
-        {/* Vista previa */}
-        {previewImage && (
-          <div className="mb-3 p-3 bg-light rounded">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <small className="text-muted">Vista previa:</small>
+        {/* Controles adicionales */}
+        <div className="d-flex justify-content-between align-items-center">
+          <div>
+            {isCustomImage(avatarUrl) && (
               <button
-                onClick={handleCancel}
-                className="btn btn-sm btn-outline-danger"
-                disabled={isUploading || isDeleting}
+                onClick={handleDeleteAvatar}
+                disabled={isUploading}
+                className="btn btn-outline-danger"
               >
-                <X size={16} />
+                <Trash2 size={16} className="me-2" />
+                Eliminar foto personalizada
               </button>
-            </div>
-            <div className="d-flex align-items-center">
-              <img
-                src={previewImage}
-                alt="Preview"
-                className="rounded me-3"
-                style={{ width: '60px', height: '60px', objectFit: 'cover' }}
-              />
-              <div className="flex-grow-1">
-                <p className="mb-1 small text-truncate">{selectedFile?.name}</p>
-                <p className="mb-0 small text-muted">
-                  {(selectedFile?.size / 1024 / 1024).toFixed(2)} MB • 
-                  {selectedFile?.type.split('/')[1].toUpperCase()}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
-        )}
-
-        {/* Botones de acción */}
-        <div className="d-flex gap-2">
-          {selectedFile && (
-            <button
-              onClick={handleUpload}
-              disabled={isUploading || isDeleting}
-              className="btn btn-primary flex-grow-1"
-            >
-              {isUploading ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                  Subiendo...
-                </>
-              ) : (
-                <>
-                  <Upload size={16} className="me-2" />
-                  Subir Foto
-                </>
-              )}
-            </button>
-          )}
           
-          {showDeleteButton && !previewImage && (
-            <button
-              onClick={handleRemoveAvatar}
-              className="btn btn-outline-danger"
-              disabled={isUploading || isDeleting}
-            >
-              {isDeleting ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                  Eliminando...
-                </>
-              ) : (
-                <>
-                  <Trash2 size={16} className="me-2" />
-                  Eliminar
-                </>
-              )}
-            </button>
-          )}
-        </div>
-
-        {/* Información adicional */}
-        <div className="mt-3">
-          <small className="text-muted d-block">
-            <strong>Nota para editores:</strong> Tu avatar será visible para los clientes del negocio donde trabajas.
-          </small>
-          <small className="text-muted d-block mt-1">
-            Al eliminar tu foto, el sistema generará automáticamente un avatar por defecto basado en tu perfil.
-          </small>
+          <div className="text-muted">
+            <small>
+              <ImageIcon size={14} className="me-1" />
+              {isCustomImage(avatarUrl) ? 'Imagen personalizada' : 'Avatar por defecto'}
+            </small>
+          </div>
         </div>
       </div>
     </div>
