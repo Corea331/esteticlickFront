@@ -111,7 +111,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
         )}
 
         <div className="mb-3">
-          <label className="form-label">
+          <label for='name' className="form-label">
             <User size={16} className="me-2" />
             Nombre completo
           </label>
@@ -130,7 +130,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">
+          <label for='email' className="form-label">
             <Mail size={16} className="me-2" />
             Email
           </label>
@@ -149,7 +149,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">
+          <label for='phone' className="form-label">
             <Phone size={16} className="me-2" />
             Teléfono
           </label>
@@ -168,7 +168,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">
+          <label for='password' className="form-label">
             <Lock size={16} className="me-2" />
             Nueva contraseña
           </label>
@@ -197,7 +197,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
         </div>
 
         <div className="mb-4">
-          <label className="form-label">
+          <label for='password_confirmation' className="form-label">
             <Lock size={16} className="me-2" />
             Confirmar contraseña
           </label>
@@ -260,7 +260,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
 
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label className="form-label">
+          <label for='name' className="form-label">
             <User size={16} className="me-2" />
             Nombre completo *
           </label>
@@ -279,7 +279,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
         </div>
 
         <div className="col-md-6 mb-3">
-          <label className="form-label">
+          <label for='email' className="form-label">
             <Mail size={16} className="me-2" />
             Email *
           </label>
@@ -299,7 +299,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
       </div>
 
       <div className="mb-3">
-        <label className="form-label">
+        <label for='phone' className="form-label">
           <Phone size={16} className="me-2" />
           Teléfono
         </label>
@@ -328,7 +328,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
         <div className="card-body">
           <div className="row">
             <div className="col-md-6 mb-3">
-              <label className="form-label">Nueva contraseña</label>
+              <label for='password' className="form-label">Nueva contraseña</label>
               <div className="input-group">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -354,7 +354,7 @@ const ProfileForm = ({ initialData, onSuccess, compact = false }) => {
             </div>
 
             <div className="col-md-6 mb-3">
-              <label className="form-label">Confirmar contraseña</label>
+              <label for='password_confirmation' className="form-label">Confirmar contraseña</label>
               <div className="input-group">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
