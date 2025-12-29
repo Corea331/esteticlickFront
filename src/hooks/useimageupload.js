@@ -7,18 +7,18 @@ export const useImageUpload = () => {
   const { user, updateUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
 
-  // Validar archivo localmente
+  // Validar archivo localmente - CAMBIAR maxSizeMB DE 5 A 2
   const validateImage = (file, options = {}) => {
     const defaultOptions = {
-      maxSizeMB: 5,
-      allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+      maxSizeMB: 2, // ← CAMBIADO DE 5 A 2
+      allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'],
       ...options
     };
 
     const errors = [];
 
     if (!defaultOptions.allowedTypes.includes(file.type)) {
-      errors.push(`Formato no permitido. Use: JPG, PNG, WebP`);
+      errors.push(`Formato no permitido. Use: JPG, PNG, WebP, GIF, SVG`);
     }
 
     const maxSizeBytes = defaultOptions.maxSizeMB * 1024 * 1024;
@@ -39,67 +39,7 @@ export const useImageUpload = () => {
     };
   };
 
-  // Subir imagen a Vercel Blob
-  const uploadToBlob = async (file, path) => {
-    const token = import.meta.env.VITE_BLOB_READ_WRITE_TOKEN;
-    
-    if (!token) {
-      throw new Error('Token de Vercel Blob no configurado');
-    }
-
-    const baseUrl = 'https://3ula0dbwdyebwbnd.public.blob.vercel-storage.com';
-
-    console.log('📤 Subiendo a:', `${baseUrl}/${path}`);
-
-    const response = await fetch(`${baseUrl}/${path}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': file.type || 'application/octet-stream',
-      },
-      body: file,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error Vercel Blob: ${errorText}`);
-    }
-
-    const blobData = await response.json();
-    return blobData.url.replace('blob.vercel-storage.com', 'public.blob.vercel-storage.com');
-  };
-
-  // Generar path organizado para avatar
-  const getAvatarPath = (userData, fileName) => {
-    const userId = userData.id;
-    const userType = userData.user_type;
-    const businessId = userData.owner?.id || userData.tenant_roles?.[0]?.owner_id;
-    const timestamp = Date.now();
-    const randomSuffix = Math.random().toString(36).substring(2, 8);
-    const extension = fileName.split('.').pop().toLowerCase();
-
-    if (userType === 'admin') {
-      return `admins/${userId}/avatar-${timestamp}-${randomSuffix}.${extension}`;
-    } else if (userType === 'owner' && businessId) {
-      return `businesses/${businessId}/avatars/owner-${userId}-${timestamp}-${randomSuffix}.${extension}`;
-    } else if ((userType === 'tenant_editor' || userType === 'tenant_staff') && businessId) {
-      const roleFolder = userType === 'tenant_editor' ? 'editors' : 'staff';
-      return `businesses/${businessId}/${roleFolder}/${userId}/avatar-${timestamp}-${randomSuffix}.${extension}`;
-    } else {
-      return `users/${userId}/avatar-${timestamp}-${randomSuffix}.${extension}`;
-    }
-  };
-
-  // Generar path para imágenes de trabajo
-  const getWorkImagePath = (businessId, fileName) => {
-    const timestamp = Date.now();
-    const randomSuffix = Math.random().toString(36).substring(2, 8);
-    const name = fileName.replace(/\.[^/.]+$/, ""); // Remover extensión
-    const extension = fileName.split('.').pop().toLowerCase();
-    return `businesses/${businessId}/work-images/${name}-${timestamp}-${randomSuffix}.${extension}`;
-  };
-
-  // Subir avatar
+  // ============ SUBIR AVATAR ============
   const uploadAvatar = async (file) => {
     setIsUploading(true);
     
@@ -110,36 +50,31 @@ export const useImageUpload = () => {
         throw new Error(validation.errors.join('. '));
       }
 
-      // Generar path y subir a Vercel Blob
-      const blobPath = getAvatarPath(user, file.name);
-      const blobUrl = await uploadToBlob(file, blobPath);
+      // Crear FormData para Laravel
+      const formData = new FormData();
+      formData.append('image', file); // KEY IMPORTANTE: 'image'
 
-      // Guardar URL en backend
-      const response = await fetch('/api/user/profile/image', {
+      const token = sessionStorage.getItem('authToken');
+      
+      // Subir al backend Laravel
+      const response = await fetch('https://esteticlick.alwaysdata.net/api/user/profile/image', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          // NO incluir 'Content-Type' - FormData lo maneja automáticamente
         },
-        body: JSON.stringify({ image_url: blobUrl }),
+        body: formData,
       });
 
       if (!response.ok) {
-        // Si falla el backend, eliminar de Blob
-        try {
-          await deleteFromBlob(blobPath);
-        } catch (blobError) {
-          console.error('Error eliminando archivo huérfano:', blobError);
-        }
-        
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al guardar en el sistema');
+        throw new Error(errorData.message || 'Error al subir la imagen');
       }
 
       const result = await response.json();
       
       // Actualizar usuario en contexto
-      if (updateUser) {
+      if (updateUser && result.user) {
         updateUser(result.user);
       }
 
@@ -155,38 +90,29 @@ export const useImageUpload = () => {
     }
   };
 
-  // Eliminar avatar
+  // ============ ELIMINAR AVATAR ============
   const deleteAvatar = async (imageUrl) => {
     try {
-      // Primero eliminar del backend
-      const response = await fetch('/api/user/profile/image', {
+      const token = sessionStorage.getItem('authToken');
+      
+      // Eliminar del backend Laravel
+      const response = await fetch('https://esteticlick.alwaysdata.net/api/user/profile/image', {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al eliminar del sistema');
+        throw new Error(errorData.message || 'Error al eliminar la imagen');
       }
 
       const result = await response.json();
       
-      // Si hay imagen personalizada, eliminar de Blob
-      if (imageUrl && isCustomImage(imageUrl)) {
-        try {
-          const path = extractBlobPath(imageUrl);
-          if (path) {
-            await deleteFromBlob(path);
-          }
-        } catch (blobError) {
-          console.warn('No se pudo eliminar de Vercel Blob:', blobError);
-        }
-      }
-
       // Actualizar usuario en contexto
-      if (updateUser) {
+      if (updateUser && result.user) {
         updateUser(result.user);
       }
 
@@ -200,7 +126,7 @@ export const useImageUpload = () => {
     }
   };
 
-  // Subir imagen de trabajo
+  // ============ SUBIR IMAGEN DE TRABAJO ============
   const uploadWorkImage = async (file, businessId, metadata = {}) => {
     setIsUploading(true);
     
@@ -211,40 +137,27 @@ export const useImageUpload = () => {
         throw new Error(validation.errors.join('. '));
       }
 
-      // Verificar permisos
-      const permissions = await checkImagePermissions(businessId);
-      if (!permissions.can_upload) {
-        throw new Error('No tienes permisos para subir imágenes');
+      // Crear FormData para Laravel
+      const formData = new FormData();
+      formData.append('image', file); // KEY: 'image'
+      if (metadata.caption) {
+        formData.append('caption', metadata.caption);
       }
 
-      // Generar path y subir a Vercel Blob
-      const blobPath = getWorkImagePath(businessId, file.name);
-      const blobUrl = await uploadToBlob(file, blobPath);
-
-      // Guardar URL en backend
-      const response = await fetch(`/api/owners/${businessId}/work-images`, {
+      const token = sessionStorage.getItem('authToken');
+      
+      // Subir al backend Laravel
+      const response = await fetch(`https://esteticlick.alwaysdata.net/api/owners/${businessId}/work-images`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          image_url: blobUrl,
-          caption: metadata.caption || '',
-          title: metadata.title || file.name.replace(/\.[^/.]+$/, "")
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
-        // Si falla el backend, eliminar de Blob
-        try {
-          await deleteFromBlob(blobPath);
-        } catch (blobError) {
-          console.error('Error eliminando archivo huérfano:', blobError);
-        }
-        
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al guardar en el sistema');
+        throw new Error(errorData.message || 'Error al subir la imagen');
       }
 
       const result = await response.json();
@@ -260,13 +173,16 @@ export const useImageUpload = () => {
     }
   };
 
-  // Eliminar imagen de trabajo
-  const deleteWorkImage = async (businessId, imageUrl, imageId = null) => {
+  // ============ ELIMINAR IMAGEN DE TRABAJO ============
+  const deleteWorkImage = async (businessId, imageUrl) => {
     try {
-      const response = await fetch(`/api/owners/${businessId}/work-images`, {
+      const token = sessionStorage.getItem('authToken');
+      
+      // Eliminar del backend Laravel
+      const response = await fetch(`https://esteticlick.alwaysdata.net/api/owners/${businessId}/work-images`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ image_url: imageUrl }),
@@ -274,23 +190,10 @@ export const useImageUpload = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al eliminar del sistema');
+        throw new Error(errorData.message || 'Error al eliminar la imagen');
       }
 
       const result = await response.json();
-      
-      // Eliminar de Blob
-      if (imageUrl) {
-        try {
-          const path = extractBlobPath(imageUrl);
-          if (path) {
-            await deleteFromBlob(path);
-          }
-        } catch (blobError) {
-          console.warn('No se pudo eliminar de Vercel Blob:', blobError);
-        }
-      }
-
       showSuccess('Imagen eliminada correctamente');
       return result;
 
@@ -301,12 +204,13 @@ export const useImageUpload = () => {
     }
   };
 
-  // Verificar permisos de imágenes
+  // ============ VERIFICAR PERMISOS ============
   const checkImagePermissions = async (businessId) => {
     try {
-      const response = await fetch(`/api/owners/${businessId}/image-permissions`, {
+      const token = sessionStorage.getItem('authToken');
+      const response = await fetch(`https://esteticlick.alwaysdata.net/api/owners/${businessId}/image-permissions`, {
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
       
@@ -318,52 +222,22 @@ export const useImageUpload = () => {
     }
   };
 
-  // Eliminar de Vercel Blob
-  const deleteFromBlob = async (path) => {
-    const token = import.meta.env.VITE_BLOB_READ_WRITE_TOKEN;
-    
-    if (!token) return;
-
-    const response = await fetch(`https://blob.vercel-storage.com/${path}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      console.warn('No se pudo eliminar de Vercel Blob');
-    }
-  };
-
-  // Extraer path de URL de Blob
-  const extractBlobPath = (url) => {
-    if (!url.includes('vercel-storage.com')) return null;
-    
-    try {
-      const urlObj = new URL(url);
-      return urlObj.pathname.substring(1); // Remover slash inicial
-    } catch (error) {
-      return null;
-    }
-  };
-
-  // Verificar si es imagen personalizada (no DiceBear)
+  // ============ UTILIDADES ============
   const isCustomImage = (imageUrl) => {
     if (!imageUrl) return false;
-    return !imageUrl.includes('dicebear.com') && !imageUrl.includes('api.dicebear.com');
+    // Ahora las imágenes personalizadas vienen de esteticlick.alwaysdata.net/storage/
+    return imageUrl.includes('esteticlick.alwaysdata.net/storage/');
   };
 
-  // Obtener URL del avatar
   const getAvatarUrl = (userData = user) => {
     if (!userData) return null;
     
-    // Prioridad: image_url personalizada
+    // Prioridad: image_url personalizada de Laravel Storage
     if (userData.image_url && isCustomImage(userData.image_url)) {
       return userData.image_url;
     }
     
-    // Avatar por defecto del backend
+    // Avatar por defecto (DiceBear)
     return userData.image_url;
   };
 

@@ -220,7 +220,7 @@ const WorkImageUploader = ({ businessId, businessName, maxImages = 20, onImagesU
                   </small>
                   <small className="text-muted d-block mb-1">
                     <CheckCircle size={12} className="me-1 text-success" />
-                    Tamaño máximo: 5MB c/u
+                    Tamaño máximo: 2MB c/u
                   </small>
                 </div>
                 <div className="col-md-6">

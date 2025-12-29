@@ -195,7 +195,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
             />
             
             <small className="text-muted d-block mt-1">
-              JPG, PNG, WebP • Máx 5MB
+              JPG, PNG, WebP, SVG, GIF • Máx 2MB
             </small>
           </div>
         </div>
@@ -328,15 +328,11 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
               <div className="d-flex flex-wrap gap-3 mb-2">
                 <small className="d-flex align-items-center">
                   <span className="text-success me-1">✓</span>
-                  Formatos: JPG, PNG, WebP
+                  Formatos: JPG, PNG, WebP, GIF, SVG
                 </small>
                 <small className="d-flex align-items-center">
                   <span className="text-success me-1">✓</span>
-                  Tamaño máximo: 5MB
-                </small>
-                <small className="d-flex align-items-center">
-                  <span className="text-success me-1">✓</span>
-                  Se guarda en Vercel Blob
+                  Tamaño máximo: 2MB
                 </small>
               </div>
               <small className="text-muted">
