@@ -47,7 +47,11 @@ export const useImageUpload = () => {
       throw new Error('Token de Vercel Blob no configurado');
     }
 
-    const response = await fetch(`https://public.blob.vercel-storage.com/${path}`, {
+    const baseUrl = 'https://3ula0dbwdyebwbnd.public.blob.vercel-storage.com';
+
+    console.log('📤 Subiendo a:', `${baseUrl}/${path}`);
+
+    const response = await fetch(`${baseUrl}${path}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
