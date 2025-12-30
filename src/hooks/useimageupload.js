@@ -95,8 +95,10 @@ export const useImageUpload = () => {
           ...user,
           image_url: result.image_url || result.avatar_url,
           avatar_url: result.avatar_url || result.image_url,
+          profile_image: result.profile_image || result.image_url || result.avatar_url,
         };
         updateUser(updatedUser);
+        console.log('✅ Usuario actualizado (upload):', updatedUser);
       }
 
       showSuccess('Foto de perfil actualizada correctamente');
@@ -139,8 +141,10 @@ export const useImageUpload = () => {
           ...user,
           image_url: null,
           avatar_url: null,
+          profile_image: result.profile_image || null,
         };
         updateUser(updatedUser);
+        console.log('✅ Usuario actualizado (delete):', updatedUser);
       }
 
       showSuccess('Foto eliminada. Se mostrará el avatar por defecto');
@@ -270,21 +274,21 @@ export const useImageUpload = () => {
   const getAvatarUrl = (userData = user) => {
     if (!userData) return null;
     
-    // Prioridad: image_url personalizada de Laravel Storage
+    // Prioridad 1: profile_image del accessor (backend lo devuelve)
+    if (userData.profile_image) {
+      return userData.profile_image;
+    }
+
+    // Prioridad 2: image_url personalizada de Laravel Storage
     if (userData.image_url && isCustomImage(userData.image_url)) {
       return userData.image_url;
     }
 
-    // Prioridad 2: avatar_url de Laravel Storage
+    // Prioridad 3: avatar_url de Laravel Storage
     if (userData.avatar_url && isCustomImage(userData.avatar_url)) {
       return userData.avatar_url;
     }
 
-    // Prioridad 3: profile_image del accessor (backend lo devuelve)
-    if (userData.profile_image) {
-      return userData.profile_image;
-    }
-    
     // Prioridad 4: image_url aunque sea DiceBear
     if (userData.image_url) {
       return userData.image_url;

@@ -138,7 +138,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
     
     try {
       setLocalUploading(true);
-      const result = await deleteAvatar(); // 🔥 No pasar parámetro
+      const result = await deleteAvatar(); // No pasar parámetro
       console.log('Resultado de deleteAvatar:', result);
       
       // Obtener URL por defecto
