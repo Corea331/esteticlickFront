@@ -258,17 +258,30 @@ export const useImageUpload = () => {
     if (!imageUrl) return false;
 
     // Verificar si es imagen por defecto (DiceBear)
-    const isDefaultAvatar = 
-      imageUrl.includes('api.dicebear.com') ||
-      imageUrl.includes('dicebear') ||
-      imageUrl.includes('avatars') || // Solo si viene de DiceBear
-      (imageUrl.includes('seed=') && imageUrl.includes('dicebear'));
+    const isDiceBar = imageUrl.includes('api.dicebear.com') || imageUrl.includes('dicebear') || (imageUrl.includes('seed=') && imageUrl.includes('dicebear'));
     
     // Si es DiceBear, no es custom
-    if (isDefaultAvatar) return false;
+    if(isDiceBar) {
+      return false
+    };
 
-    // Cualquier otra url se considera custom
-    return true;
+    // Si es de nuestro storage → SÍ es custom
+    const isOurStorage = 
+    imageUrl.includes('esteticlick.alwaysdata.net/storage/') ||
+    imageUrl.includes('storage/avatars/') ||
+    imageUrl.includes('/storage/');
+
+    if(isOurStorage) {
+      return true
+    };
+
+    // 3. Si es una data URL (preview local) → SÍ es custom
+    if (imageUrl.startsWith('data:image/')) {
+      return true;
+    }
+
+    // Cualquier otra URL (por seguridad) → NO es custom
+    return false;
   };
 
   const getAvatarUrl = (userData = user) => {
