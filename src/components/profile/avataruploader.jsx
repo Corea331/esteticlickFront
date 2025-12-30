@@ -189,7 +189,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
               </div>
             )}
             
-            {isCustomImage(displayAvatarUrl) && (
+            {displayAvatarUrl && isCustomImage(displayAvatarUrl) && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 className="btn btn-sm btn-danger position-absolute top-0 end-0 translate-middle"
@@ -303,7 +303,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
             
             {/* Badge de estado */}
             <span className="position-absolute top-0 end-0 translate-middle badge bg-primary">
-              {isCustomImage(displayAvatarUrl) ? 'Personalizada' : 'Por defecto'}
+              {displayAvatarUrl && isCustomImage(displayAvatarUrl) ? 'Personalizada' : 'Por defecto'}
             </span>
           </div>
           
@@ -375,7 +375,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
         {/* Controles adicionales */}
         <div className="d-flex justify-content-between align-items-center">
           <div>
-            {isCustomImage(displayAvatarUrl) && (
+            {displayAvatarUrl && isCustomImage(displayAvatarUrl) && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={localUploading || isUploading}
@@ -390,7 +390,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
           <div className="text-muted">
             <small>
               <ImageIcon size={14} className="me-1" />
-              {isCustomImage(displayAvatarUrl) ? 'Imagen personalizada' : 'Avatar por defecto'}
+              {displayAvatarUrl && isCustomImage(displayAvatarUrl) ? 'Imagen personalizada' : 'Avatar por defecto'}
             </small>
           </div>
         </div>
