@@ -20,6 +20,7 @@
     "filepond-plugin-file-validate-type": "^1.2.9",
     "filepond-plugin-image-preview": "^4.6.12",
     "filepond-plugin-image-validate-size": "^1.2.7",
+    "image-conversion": "^2.1.1",
     "lucide-react": "^0.562.0",
     "react": "^19.1.1",
     "react-bootstrap": "^2.10.10",

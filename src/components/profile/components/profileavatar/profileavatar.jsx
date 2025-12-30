@@ -1,4 +1,4 @@
-import AvatarUploader from '../../avataruploader';
+import AvatarUploader from '../../avataruploader/avataruploader.jsx';
 import './profileavatar.css';
 
 const ProfileAvatar = ({ currentAvatar, onUploadComplete, onCancel }) => {

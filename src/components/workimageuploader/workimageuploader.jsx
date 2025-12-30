@@ -10,7 +10,7 @@ import {
   Image, Upload, Trash2, Eye, Building, AlertCircle, 
   CheckCircle, XCircle, Users, Edit, User, Info
 } from 'lucide-react';
-import { useImageUpload } from '../hooks/useimageupload';
+import { useImageUpload } from '../../hooks/useimageupload';
 
 registerPlugin(
   FilePondPluginImagePreview,
