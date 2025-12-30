@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; 
 import { FilePond, registerPlugin } from 'react-filepond';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import FilePondPluginImageValidateSize from 'filepond-plugin-image-validate-size';
@@ -37,6 +37,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
   const [uploadError, setUploadError] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [localUploading, setLocalUploading] = useState(false);
+  const pondRef = useRef(null);
 
   // Sincronizar avatarUrl con currentAvatar
   useEffect(() => {
@@ -48,7 +49,56 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
     }
   }, [currentAvatar, user, getAvatarUrl]);
 
-  // Configuración simplificada de FilePond
+  // FUNCIÓN PARA MANEJAR SUBIDA
+  const handleFileAdd = async (fileItem) => {
+    setLocalUploading(true);
+    setUploadError(null);
+    setUploadSuccess(false);
+    
+    try {
+      const file = fileItem.file;
+      
+      // Mostrar preview inmediatamente
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAvatarUrl(e.target.result);
+      };
+      reader.readAsDataURL(file);
+      
+      // Subir al servidor usando el hook
+      const result = await uploadAvatar(file);
+      console.log('Resultado de uploadAvatar:', result);
+      
+      // Obtener la nueva URL de imagen
+      const newUrl = result?.image_url || result?.avatar_url || result?.profile_image;
+      if (newUrl) {
+        setAvatarUrl(newUrl);
+        setUploadSuccess(true);
+        
+        // Notificar al componente padre
+        if (onUploadComplete) {
+          setTimeout(() => {
+            onUploadComplete(newUrl);
+          }, 500);
+        }
+      }
+      
+    } catch (err) {
+      console.error('Error en upload:', err);
+      setUploadError(err.message || 'Error al subir la imagen');
+    } finally {
+      setLocalUploading(false);
+      
+      // IMPORTANTE: Limpiar FilePond después de procesar
+      setTimeout(() => {
+        if (pondRef.current) {
+          pondRef.current.removeFile(fileItem.id);
+        }
+      }, 500);
+    }
+  };
+
+  // CONFIGURACIÓN SIMPLIFICADA DE FILEPOND
   const pondConfig = {
     allowMultiple: false,
     maxFiles: 1,
@@ -57,71 +107,28 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
       ? '<span class="text-muted">Arrastra o selecciona</span>'
       : 'Arrastra y suelta tu foto o <span class="filepond--label-action">selecciona</span>',
     acceptedFileTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
-    maxFileSize: '5MB',
+    maxFileSize: '2MB',
     imagePreviewHeight: 150,
     stylePanelLayout: compact ? 'compact circle' : 'integrated',
     
-    // Configuración simplificada del servidor
-    server: {
-      // No usar process, usar onaddfile
-      process: null,
-      load: null,
-      fetch: null,
-      revert: null
-    },
+    // CONFIGURACIÓN CRÍTICA: Deshabilitar todo el servidor de FilePond
+    server: false,
     
-    // Manejar archivos añadidos
-    onaddfile: async (error, fileItem) => {
+    // Solo usar onaddfile para capturar el archivo
+    onaddfile: (error, fileItem) => {
       if (error) {
         setUploadError('Error al cargar el archivo: ' + error.message);
         return;
       }
       
-      setLocalUploading(true);
-      setUploadError(null);
-      setUploadSuccess(false);
-      
-      try {
-        const file = fileItem.file;
-        
-        // Mostrar preview inmediatamente
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setAvatarUrl(e.target.result);
-        };
-        reader.readAsDataURL(file);
-        
-        // Subir al servidor
-        const result = await uploadAvatar(file);
-        
-        if (result?.user?.image_url || result?.image_url) {
-          const newUrl = result.user?.image_url || result.image_url;
-          setAvatarUrl(newUrl);
-          setUploadSuccess(true);
-          
-          // Notificar al componente padre
-          if (onUploadComplete) {
-            setTimeout(() => {
-              onUploadComplete(newUrl);
-            }, 500);
-          }
-        }
-        
-        // FilePond espera que removamos el archivo después de procesarlo
-        fileItem.remove();
-        
-      } catch (err) {
-        console.error('Error en upload:', err);
-        setUploadError(err.message || 'Error al subir la imagen');
-        fileItem.remove(); // Remover archivo en caso de error
-      } finally {
-        setLocalUploading(false);
-      }
+      // Manejar la subida manualmente
+      handleFileAdd(fileItem);
     },
     
-    // Manejar cuando se remueve un archivo
-    onremovefile: () => {
-      // No hacer nada especial
+    // Manejar error de carga
+    onerror: (error) => {
+      console.error('FilePond error:', error);
+      setUploadError('Error con el archivo: ' + error.message);
     }
   };
 
@@ -131,18 +138,18 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
     
     try {
       setLocalUploading(true);
-      const result = await deleteAvatar(avatarUrl);
+      const result = await deleteAvatar(); // 🔥 No pasar parámetro
+      console.log('Resultado de deleteAvatar:', result);
       
-      if (result?.user?.image_url) {
-        const defaultUrl = result.user.image_url;
-        setAvatarUrl(defaultUrl);
-        setUploadSuccess(false);
-        
-        if (onUploadComplete) {
-          setTimeout(() => {
-            onUploadComplete(defaultUrl);
-          }, 500);
-        }
+      // Obtener URL por defecto
+      const defaultUrl = result?.profile_image || getAvatarUrl(user);
+      setAvatarUrl(defaultUrl);
+      setUploadSuccess(false);
+      
+      if (onUploadComplete) {
+        setTimeout(() => {
+          onUploadComplete(defaultUrl);
+        }, 500);
       }
       
       setShowDeleteConfirm(false);
@@ -154,6 +161,9 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
     }
   };
 
+  // Obtener URL de avatar para mostrar
+  const displayAvatarUrl = avatarUrl || getAvatarUrl(user);
+
   // Versión simplificada compacta
   if (compact) {
     return (
@@ -161,12 +171,16 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
         <div className="d-flex align-items-center">
           {/* Avatar preview */}
           <div className="position-relative me-3">
-            {avatarUrl ? (
+            {displayAvatarUrl ? (
               <img
-                src={avatarUrl}
+                src={displayAvatarUrl}
                 alt="Avatar"
                 className="rounded-circle border"
                 style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = getAvatarUrl({ email: user?.email || 'default' });
+                }}
               />
             ) : (
               <div className="rounded-circle border d-flex align-items-center justify-content-center bg-light"
@@ -175,7 +189,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
               </div>
             )}
             
-            {isCustomImage(avatarUrl) && (
+            {isCustomImage(displayAvatarUrl) && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 className="btn btn-sm btn-danger position-absolute top-0 end-0 translate-middle"
@@ -190,12 +204,13 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
           {/* FilePond simplificado */}
           <div className="flex-grow-1">
             <FilePond
+              ref={pondRef}
               {...pondConfig}
-              files={[]} // Iniciar sin archivos
+              files={[]}
             />
             
             <small className="text-muted d-block mt-1">
-              JPG, PNG, WebP, SVG, GIF • Máx 2MB
+              JPG, PNG, WebP • Máx 2MB
             </small>
           </div>
         </div>
@@ -268,9 +283,9 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
         {/* Avatar actual */}
         <div className="text-center mb-4">
           <div className="position-relative d-inline-block">
-            {avatarUrl ? (
+            {displayAvatarUrl ? (
               <img
-                src={avatarUrl}
+                src={displayAvatarUrl}
                 alt="Avatar"
                 className="rounded-circle border"
                 style={{ width: '150px', height: '150px', objectFit: 'cover' }}
@@ -288,7 +303,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
             
             {/* Badge de estado */}
             <span className="position-absolute top-0 end-0 translate-middle badge bg-primary">
-              {isCustomImage(avatarUrl) ? 'Personalizada' : 'Por defecto'}
+              {isCustomImage(displayAvatarUrl) ? 'Personalizada' : 'Por defecto'}
             </span>
           </div>
           
@@ -328,7 +343,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
               <div className="d-flex flex-wrap gap-3 mb-2">
                 <small className="d-flex align-items-center">
                   <span className="text-success me-1">✓</span>
-                  Formatos: JPG, PNG, WebP, GIF, SVG
+                  Formatos: JPG, PNG, WebP
                 </small>
                 <small className="d-flex align-items-center">
                   <span className="text-success me-1">✓</span>
@@ -345,8 +360,9 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
         {/* FilePond simplificado */}
         <div className="mb-4">
           <FilePond
+            ref={pondRef}
             {...pondConfig}
-            files={[]} // Iniciar sin archivos
+            files={[]}
           />
           
           <div className="text-center mt-2">
@@ -359,7 +375,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
         {/* Controles adicionales */}
         <div className="d-flex justify-content-between align-items-center">
           <div>
-            {isCustomImage(avatarUrl) && (
+            {isCustomImage(displayAvatarUrl) && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={localUploading || isUploading}
@@ -374,16 +390,12 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
           <div className="text-muted">
             <small>
               <ImageIcon size={14} className="me-1" />
-              {isCustomImage(avatarUrl) ? 'Imagen personalizada' : 'Avatar por defecto'}
+              {isCustomImage(displayAvatarUrl) ? 'Imagen personalizada' : 'Avatar por defecto'}
             </small>
           </div>
         </div>
 
         {/* Confirmación de eliminación */}
-        {showDeleteConfirm && (
-          <div className="modal-backdrop show"></div>
-        )}
-        
         {showDeleteConfirm && (
           <div className="modal show d-block" tabIndex="-1">
             <div className="modal-dialog modal-dialog-centered">

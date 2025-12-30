@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FilePond, registerPlugin } from 'react-filepond';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import FilePondPluginImageValidateSize from 'filepond-plugin-image-validate-size';
@@ -24,7 +24,8 @@ const WorkImageUploader = ({ businessId, businessName, maxImages = 20, onImagesU
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [permissions, setPermissions] = useState(null);
-  const [filepondFiles, setFilepondFiles] = useState([]);
+  const [uploadQueue, setUploadQueue] = useState([]);
+  const pondRef = useRef(null);
 
   // Cargar imágenes y permisos
   useEffect(() => {
@@ -60,48 +61,66 @@ const WorkImageUploader = ({ businessId, businessName, maxImages = 20, onImagesU
     }
   }, [images, onImagesUpdate]);
 
-  // Configuración de FilePond
-  const pondConfig = {
-    allowMultiple: true,
-    maxFiles: maxImages - images.length,
-    maxParallelUploads: 3,
-    name: 'work_images',
-    labelIdle: 'Arrastra y suelta tus imágenes o <span class="filepond--label-action">selecciona</span>',
-    labelFileProcessing: 'Subiendo...',
-    labelFileProcessingComplete: 'Subida completa',
-    labelFileProcessingError: 'Error al subir',
-    labelTapToCancel: 'Toca para cancelar',
-    labelTapToRetry: 'Toca para reintentar',
-    acceptedFileTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
-    maxFileSize: '5MB',
-    imagePreviewHeight: 150,
-    stylePanelLayout: 'integrated',
-    styleLoadIndicatorPosition: 'center bottom',
-    styleProgressIndicatorPosition: 'right bottom',
-    styleButtonRemoveItemPosition: 'left bottom',
-    styleButtonProcessItemPosition: 'right bottom',
+  // NUEVA FUNCIÓN PARA MANEJAR SUBIDA DE MÚLTIPLES ARCHIVOS
+  const handleFilesAdd = async (fileItems) => {
+    const newUploads = [];
+    
+    for (const fileItem of fileItems) {
+      try {
+        const file = fileItem.file;
+        
+        // Mostrar preview inmediatamente
+        fileItem.setMetadata('uploading', true);
+        newUploads.push({
+          id: fileItem.id,
+          name: file.name,
+          status: 'uploading'
+        });
+        
+        // Subir al servidor
+        const result = await uploadWorkImage(file, businessId, {
+          title: file.name,
+          caption: ''
+        });
+        
+        // Actualizar imágenes si el resultado contiene nuevas
+        if (result?.work_images) {
+          setImages(result.work_images);
+        }
+        
+        fileItem.setMetadata('uploaded', true);
+        fileItem.setMetadata('status', 'success');
+        
+      } catch (err) {
+        console.error('Error uploading image:', err);
+        fileItem.setMetadata('uploadError', err.message);
+        fileItem.setMetadata('status', 'error');
+      } finally {
+        // Limpiar archivo de FilePond después de procesar
+        setTimeout(() => {
+          if (pondRef.current) {
+            pondRef.current.removeFile(fileItem.id);
+          }
+        }, 1000);
+      }
+    }
+    
+    return newUploads;
   };
 
-  // Manejar subida de FilePond
-  const handleFilePondProcess = async (error, file) => {
+  // MANEJADOR DE FILEPOND PARA AÑADIR ARCHIVOS
+  const handleFilePondAdd = async (error, fileItems) => {
     if (error) {
       console.error('FilePond error:', error);
       return;
     }
     
-    try {
-      const result = await uploadWorkImage(file.file, businessId, {
-        title: file.filename || file.file.name,
-        caption: ''
-      });
-      
-      if (result?.work_images) {
-        setImages(result.work_images);
-      }
-      
-      file.setMetadata('uploaded', true);
-    } catch (err) {
-      file.setMetadata('uploadError', err.message);
+    // Si es un array, procesar múltiples archivos
+    if (Array.isArray(fileItems)) {
+      await handleFilesAdd(fileItems);
+    } else {
+      // Si es un solo archivo
+      await handleFilesAdd([fileItems]);
     }
   };
 
@@ -122,6 +141,39 @@ const WorkImageUploader = ({ businessId, businessName, maxImages = 20, onImagesU
       case 'editor': return { label: 'Editor', icon: Edit, color: 'success' };
       case 'staff': return { label: 'Staff', icon: Users, color: 'info' };
       default: return { label: 'Usuario', icon: User, color: 'secondary' };
+    }
+  };
+
+  // CONFIGURACIÓN SIMPLIFICADA DE FILEPOND
+  const pondConfig = {
+    allowMultiple: true,
+    maxFiles: maxImages - images.length,
+    maxParallelUploads: 1, // Reducir a 1 para evitar conflictos
+    name: 'work_images',
+    labelIdle: 'Arrastra y suelta tus imágenes o <span class="filepond--label-action">selecciona</span>',
+    labelFileProcessing: 'Subiendo...',
+    labelFileProcessingComplete: 'Subida completa',
+    labelFileProcessingError: 'Error al subir',
+    labelTapToCancel: 'Toca para cancelar',
+    labelTapToRetry: 'Toca para reintentar',
+    acceptedFileTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+    maxFileSize: '2MB',
+    imagePreviewHeight: 150,
+    stylePanelLayout: 'integrated',
+    styleLoadIndicatorPosition: 'center bottom',
+    styleProgressIndicatorPosition: 'right bottom',
+    styleButtonRemoveItemPosition: 'left bottom',
+    styleButtonProcessItemPosition: 'right bottom',
+    
+    // CONFIGURACIÓN CRÍTICA: Deshabilitar todo el servidor de FilePond
+    server: false,
+    
+    // Solo usar onaddfile para capturar los archivos
+    onaddfile: handleFilePondAdd,
+    
+    // Manejar error de carga
+    onerror: (error) => {
+      console.error('FilePond error:', error);
     }
   };
 
@@ -188,27 +240,9 @@ const WorkImageUploader = ({ businessId, businessName, maxImages = 20, onImagesU
             </h6>
             
             <FilePond
+              ref={pondRef}
               {...pondConfig}
-              files={filepondFiles}
-              onupdatefiles={setFilepondFiles}
-              onprocessfile={handleFilePondProcess}
-              server={{
-                process: (fieldName, file, metadata, load, error, progress, abort) => {
-                  // FilePond solo maneja preview
-                  const controller = new AbortController();
-                  
-                  const interval = setInterval(() => {
-                    progress(true, 1, 1024);
-                  }, 1000);
-                  
-                  return {
-                    abort: () => {
-                      controller.abort();
-                      clearInterval(interval);
-                    }
-                  };
-                }
-              }}
+              files={[]} // Iniciar sin archivos
             />
             
             <div className="mt-3">
@@ -267,6 +301,10 @@ const WorkImageUploader = ({ businessId, businessName, maxImages = 20, onImagesU
                         alt={image.caption || 'Imagen de trabajo'}
                         className="card-img-top"
                         style={{ height: '200px', objectFit: 'cover' }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/default-image.jpg';
+                        }}
                       />
                       
                       {/* Badge de rol */}
@@ -332,6 +370,18 @@ const WorkImageUploader = ({ businessId, businessName, maxImages = 20, onImagesU
           <p className="mb-0 small mt-1">
             Elimina algunas imágenes antiguas para poder subir nuevas.
           </p>
+        </div>
+      )}
+
+      {/* Estado de subida */}
+      {isUploading && (
+        <div className="alert alert-info mt-3">
+          <div className="d-flex align-items-center">
+            <div className="spinner-border spinner-border-sm me-2" role="status">
+              <span className="visually-hidden">Subiendo...</span>
+            </div>
+            <span>Subiendo imágenes...</span>
+          </div>
         </div>
       )}
     </div>
