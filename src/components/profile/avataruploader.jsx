@@ -67,7 +67,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
       
       // Subir al servidor usando el hook
       const result = await uploadAvatar(file);
-      console.log('Resultado de uploadAvatar:', result);
+      //console.log('Resultado de uploadAvatar:', result);
       
       // Obtener la nueva URL de imagen
       const newUrl = result?.image_url || result?.avatar_url || result?.profile_image;
@@ -84,7 +84,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
       }
       
     } catch (err) {
-      console.error('Error en upload:', err);
+      //console.error('Error en upload:', err);
       setUploadError(err.message || 'Error al subir la imagen');
     } finally {
       setLocalUploading(false);
@@ -127,7 +127,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
     
     // Manejar error de carga
     onerror: (error) => {
-      console.error('FilePond error:', error);
+      //console.error('FilePond error:', error);
       setUploadError('Error con el archivo: ' + error.message);
     }
   };
@@ -139,7 +139,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
     try {
       setLocalUploading(true);
       const result = await deleteAvatar(); // No pasar parámetro
-      console.log('Resultado de deleteAvatar:', result);
+      //console.log('Resultado de deleteAvatar:', result);
       
       // Obtener URL por defecto
       const defaultUrl = result?.profile_image || getAvatarUrl(user);
@@ -154,7 +154,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
       
       setShowDeleteConfirm(false);
     } catch (error) {
-      console.error('Error deleting avatar:', error);
+      //console.error('Error deleting avatar:', error);
       setUploadError(error.message || 'Error al eliminar la imagen');
     } finally {
       setLocalUploading(false);

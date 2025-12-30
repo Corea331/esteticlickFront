@@ -87,7 +87,7 @@ export const useImageUpload = () => {
       }
 
       const result = await response.json();
-      console.log('✅ Avatar upload response:', result); // Debug
+      //console.log('✅ Avatar upload response:', result); // Debug
       
       // Actualizar usuario en contexto
       if (updateUser) {
@@ -98,14 +98,14 @@ export const useImageUpload = () => {
           profile_image: result.profile_image || result.image_url || result.avatar_url,
         };
         updateUser(updatedUser);
-        console.log('✅ Usuario actualizado (upload):', updatedUser);
+        //console.log('✅ Usuario actualizado (upload):', updatedUser);
       }
 
       showSuccess('Foto de perfil actualizada correctamente');
       return result;
 
     } catch (error) {
-      console.error('Error uploading avatar:', error);
+      //console.error('Error uploading avatar:', error);
       showError(error.message || 'Error al subir la foto de perfil');
       throw error;
     } finally {
@@ -133,7 +133,7 @@ export const useImageUpload = () => {
       }
 
       const result = await response.json();
-      console.log('✅ Avatar delete response:', result); // Debug
+      //console.log('✅ Avatar delete response:', result); // Debug
       
       // Actualizar usuario en contexto
       if (updateUser) {
@@ -144,14 +144,14 @@ export const useImageUpload = () => {
           profile_image: result.profile_image || null,
         };
         updateUser(updatedUser);
-        console.log('✅ Usuario actualizado (delete):', updatedUser);
+        //console.log('✅ Usuario actualizado (delete):', updatedUser);
       }
 
       showSuccess('Foto eliminada. Se mostrará el avatar por defecto');
       return result;
 
     } catch (error) {
-      console.error('Error deleting avatar:', error);
+      //console.error('Error deleting avatar:', error);
       showError(error.message || 'Error al eliminar la foto de perfil');
       throw error;
     }
@@ -196,7 +196,7 @@ export const useImageUpload = () => {
       return result;
 
     } catch (error) {
-      console.error('Error uploading work image:', error);
+      //console.error('Error uploading work image:', error);
       showError(error.message || 'Error al subir la imagen');
       throw error;
     } finally {
@@ -229,7 +229,7 @@ export const useImageUpload = () => {
       return result;
 
     } catch (error) {
-      console.error('Error deleting work image:', error);
+      //console.error('Error deleting work image:', error);
       showError(error.message || 'Error al eliminar la imagen');
       throw error;
     }
@@ -248,7 +248,7 @@ export const useImageUpload = () => {
       if (!response.ok) return null;
       return await response.json();
     } catch (error) {
-      console.error('Error checking permissions:', error);
+      //console.error('Error checking permissions:', error);
       return null;
     }
   };
