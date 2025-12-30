@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   X, Check, Download, RotateCw, ZoomIn, 
-  ZoomOut, Settings, FileImage, Compress,
+  ZoomOut, Settings, FileImage, Image as ImageIcon
 } from 'lucide-react';
 import './imageconvertermodal.css';
 
@@ -49,7 +49,7 @@ const ImageConverterModal = ({ converter, title = "Optimizar Imagen" }) => {
           {/* Header */}
           <div className="image-converter-modal-header">
             <h5 className="modal-title d-flex align-items-center">
-              <Compress size={20} className="me-2" />
+              <ImageIcon size={20} className="me-2" />
               {title}
             </h5>
             <button 
