@@ -56,29 +56,51 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
 
   // Manejar subida con conversión
   const handleFileWithConversion = async (file) => {
+    console.log('handleFileWithConversion:', {
+      name: file.name,
+      size: (file.size / 1024 / 1024).toFixed(2) + 'MB',
+      type: file.type,
+      needsConversion: imageConverter.needsConversion(file)
+    });
+
     setLocalUploading(true);
     setUploadError(null);
     setUploadSuccess(false);
     
     try {
+      // Verificar tamaño excesivo (más de 20MB)
+      if (file.size > 20 * 1024 * 1024) { // 20MB
+        setUploadError('El archivo es demasiado grande. Máximo 20MB.');
+        setLocalUploading(false);
+        return;
+      }
+
       // Verificar si necesita conversión
       if (imageConverter.needsConversion(file)) {
+        console.log('Necesita conversión, abriendo modal...');
         // Guardar archivo pendiente y abrir modal
         setPendingFile(file);
         
-        // Abrir modal de conversión
-        await imageConverter.openConverter(file, {
-          maxWidth: 800,
-          maxHeight: 800,
-          quality: 80,
-          format: 'webp'
-        });
-        
+        try{
+          // Abrir modal de conversión con opciones optimizadas para celular
+          await imageConverter.openConverter(file, {
+            maxWidth: 800,
+            maxHeight: 800,
+            quality: 85, // Aumentada la calidad para usar en celulares
+            format: 'webp',
+            maxSizeMB: 2, // Objetivo de compresión
+          });
+        }catch (conversionError) {
+          console.error('Error abriendo conversor:', conversionError);
+          // Si falla el modal, intentar subir directamente
+          await processFileUpload(file);
+        }
         // El modal manejará el resto
         return;
       }
       
       // Si no necesita conversión, subir directamente
+      console.log('No necesita conversión, subiendo directamente...');
       await processFileUpload(file);
       
     } catch (error) {
@@ -95,17 +117,44 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
   useEffect(() => {
     const processAfterConversion = async () => {
       if (!imageConverter.isOpen && pendingFile) {
+        console.log('Modal cerrado, procesando resultado...');
+
         // El modal se cerró, verificar resultado
         if (imageConverter.conversionResult) {
           try {
-            // Usar archivo convertido
-            await processFileUpload(imageConverter.conversionResult.converted.file);
+            console.log('Usando archivo convertido:', {
+              name: imageConverter.conversionResult.converted.file.name,
+              size: (imageConverter.conversionResult.converted.size / 1024 / 1024).toFixed(2) + 'MB',
+              reduction: imageConverter.conversionResult.converted.reduction + '%'
+            });
+
+            // Validar que el archivo convertido sea válido
+            if (!imageConverter.conversionResult.converted.file || !(imageConverter.conversionResult.converted.file instanceof File)) {
+              console.warn('Archivo convertido inválido, usando original');
+              await processFileUpload(pendingFile);
+            } else {
+              // Usar archivo convertido
+              await processFileUpload(imageConverter.conversionResult.converted.file);
+            }
           } catch (error) {
+            console.error('Error al subir imagen convertida:', error);
             setUploadError(error.message || 'Error al subir la imagen convertida');
+            // Intentar con el original como fallback
+            try {
+              await processFileUpload(pendingFile);
+            } catch (fallbackError) {
+              console.error('Fallback también falló:', fallbackError);
+            }
           }
         } else {
+          console.log('Usuario canceló o no hubo conversión, usando original');
           // Usuario canceló, usar archivo original
-          await processFileUpload(pendingFile);
+          try {
+            await processFileUpload(pendingFile);
+          } catch (error) {
+            console.error('Error al subir archivo original:', error);
+            setUploadError(error.message || 'Error al subir la imagen');
+          }
         }
         
         setPendingFile(null);
@@ -149,7 +198,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
       ? '<span class="text-muted">Arrastra o selecciona</span>'
       : 'Arrastra y suelta tu foto o <span class="filepond--label-action">selecciona</span>',
     acceptedFileTypes: ['image/*'],  // ACEPTA CUALQUIER IMAGEN
-    maxFileSize: '10MB',  // AUMENTADO A 10MB
+    maxFileSize: '20MB',  // AUMENTADO A 20MB
     imagePreviewHeight: 150,
     stylePanelLayout: compact ? 'compact circle' : 'integrated',
     
@@ -159,9 +208,22 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
     // Solo usar onaddfile para capturar el archivo
     onaddfile: (error, fileItem) => {
       if (error) {
-        setUploadError('Error al cargar el archivo: ' + error.message);
+        console.error('Filepond error: ', error);
+
+        // Manejar error de tamaño específicamente
+        if(error.code === 1) { // Error de tamaño
+          setUploadError('El archivo es muy grande. Máximo 20MB. Se comprimirá automáticamente.');
+        } else {
+          setUploadError('Error al cargar el archivo: ' + error.message);
+        };
         return;
       }
+
+      console.log('Archivo cargado:', {
+        name: fileItem.file.name,
+        size: (fileItem.file.size / 1024 / 1024).toFixed(2) + 'MB',
+        type: fileItem.file.type
+      });
       
       // Usar conversión inteligente
       handleFileWithConversion(fileItem.file);
@@ -176,6 +238,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
     
     // Manejar error de carga
     onerror: (error) => {
+      console.error('FilePond general error:', error);
       setUploadError('Error con el archivo: ' + error.message);
     }
   };
