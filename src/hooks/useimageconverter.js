@@ -131,6 +131,8 @@ export const useImageConverter = () => {
     if (onCancelCallback) {
       onCancelCallback()
     };
+
+    resetConverter();
   };
 
   // ACEPTAR CONVERSIÓN
@@ -145,33 +147,20 @@ export const useImageConverter = () => {
     const result = {
       file: conversionResult.converted.file,
       original: conversionResult.original,
-      converted: {
-        file: conversionResult.converted.file,
-        size: conversionResult.converted.size,
-        type: conversionResult.converted.type,
-        sizeMB: conversionResult.converted.sizeMB,
-        reduction: conversionResult.converted.reduction,
-        width: conversionResult.converted.width || conversionOptions.maxWidth,
-        height: conversionResult.converted.height || conversionOptions.maxHeight
-      },
+      converted: conversionResult.converted,
       keepOriginal: conversionOptions.keepOriginal
     };
 
     console.log('Resultado enviado al callback:', {
       name: result.file.name,
       size: (result.file.size / 1024 / 1024).toFixed(2) + 'MB',
-      type: result.file.type,
-      reduction: result.converted.reduction + '%'
     });
-    
-    showSuccess(`Imagen convertida a ${conversionOptions.format.toUpperCase()} (${conversionResult.converted.reduction}% menos)`);
     
     onAcceptCallback(result);
 
+    setIsOpen(false);
 
-    setTimeout(() => {
-      resetConverter();
-    }, 100);
+    showSuccess(`Imagen convertida a ${conversionOptions.format.toUpperCase()} (${conversionResult.converted.reduction}% menos)`);
     
     return result;
   };

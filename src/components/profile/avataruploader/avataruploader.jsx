@@ -41,7 +41,6 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
   const [uploadError, setUploadError] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [localUploading, setLocalUploading] = useState(false);
-  const [pendingFile, setPendingFile] = useState(null);
   const pondRef = useRef(null);
 
   // Sincronizar avatarUrl con currentAvatar
@@ -69,7 +68,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
     
     try {
       // Verificar tamaño excesivo (más de 20MB)
-      if (file.size > 20 * 1024 * 1024) { // 20MB
+      if (file.size > 20 * 1024 * 1024) {
         setUploadError('El archivo es demasiado grande. Máximo 20MB.');
         setLocalUploading(false);
         return;
@@ -78,88 +77,56 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
       // Verificar si necesita conversión
       if (imageConverter.needsConversion(file)) {
         console.log('Necesita conversión, abriendo modal...');
-        // Guardar archivo pendiente y abrir modal
-        setPendingFile(file);
         
-        try{
-          // Abrir modal de conversión con opciones optimizadas para celular
-          await imageConverter.openConverter(file, {
+        try {
+          // Abrir modal y ESPERAR resultado directamente
+          const conversionResult = await imageConverter.openConverter(file, {
             maxWidth: 800,
             maxHeight: 800,
-            quality: 85, // Aumentada la calidad para usar en celulares
+            quality: 85,
             format: 'webp',
-            maxSizeMB: 2, // Objetivo de compresión
+            maxSizeMB: 2,
           });
-        }catch (conversionError) {
-          console.error('Error abriendo conversor:', conversionError);
+
+          console.log('Resultado de conversión recibido:', conversionResult);
+          
+          // Si el usuario ACEPTÓ (hay archivo comprimido)
+          if (conversionResult?.file) {
+            console.log('Procesando archivo convertido:', {
+              name: conversionResult.file.name,
+              size: (conversionResult.file.size / 1024 / 1024).toFixed(2) + 'MB',
+              reduction: conversionResult.converted?.reduction || '0%'
+            });
+            
+            // Subir el archivo COMPRIMIDO
+            await processFileUpload(conversionResult.file);
+          }
+          // Si el usuario CANCELÓ (no hay archivo o error)
+          else {
+            console.log('Usuario canceló la conversión, usando original');
+            await processFileUpload(file);
+          }
+          
+        } catch (conversionError) {
+          console.error('Error en conversión:', conversionError);
           // Si falla el modal, intentar subir directamente
           await processFileUpload(file);
         }
-        // El modal manejará el resto
-        return;
+        
+      } else {
+        // Si no necesita conversión, subir directamente
+        console.log('No necesita conversión, subiendo directamente...');
+        await processFileUpload(file);
       }
-      
-      // Si no necesita conversión, subir directamente
-      console.log('No necesita conversión, subiendo directamente...');
-      await processFileUpload(file);
       
     } catch (error) {
       console.error('Error en subida:', error);
       setUploadError(error.message || 'Error al procesar la imagen');
     } finally {
-      if (!imageConverter.needsConversion(file)) {
-        setLocalUploading(false);
-      }
+      // Siempre limpiar estado de carga
+      setLocalUploading(false);
     }
   };
-
-  // Procesar subida después de conversión
-  useEffect(() => {
-    const processAfterConversion = async () => {
-      if (!imageConverter.isOpen && pendingFile) {
-        console.log('Modal cerrado, procesando resultado...');
-        console.log('imageConverter.conversionResult:', imageConverter.conversionResult);
-
-        // El modal se cerró, verificar resultado
-        if (imageConverter.conversionResult) {
-          try {
-            console.log('Usando archivo convertido:', {
-              name: imageConverter.conversionResult.converted.file.name,
-              size: (imageConverter.conversionResult.converted.size / 1024 / 1024).toFixed(2) + 'MB',
-              type: imageConverter.conversionResult.converted.file.type,
-              reduction: imageConverter.conversionResult.converted.reduction + '%'
-            });
-
-            // Validar que el archivo convertido sea válido
-            if (!imageConverter.conversionResult.converted.file || !(imageConverter.conversionResult.converted.file instanceof File)) {
-              console.warn('Archivo convertido inválido, usando original');
-              await processFileUpload(pendingFile);
-            } else {
-              // Usar archivo convertido
-              await processFileUpload(imageConverter.conversionResult.converted.file);
-            }
-          } catch (error) {
-            console.error('Error al subir imagen convertida:', error);
-            setUploadError(error.message || 'Error al subir la imagen convertida');
-          }
-        } else {
-          console.log('Usuario canceló o no hubo conversión, usando original');
-          // Usuario canceló, usar archivo original
-          try {
-            await processFileUpload(pendingFile);
-          } catch (error) {
-            console.error('Error al subir archivo original:', error);
-            setUploadError(error.message || 'Error al subir la imagen');
-          }
-        }
-        
-        setPendingFile(null);
-        setLocalUploading(false);
-      }
-    };
-    
-    processAfterConversion();
-  }, [imageConverter.isOpen, pendingFile, imageConverter.conversionResult]);
 
   // Función para procesar subida (común)
   const processFileUpload = async (file) => {
