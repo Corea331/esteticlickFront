@@ -18,6 +18,7 @@ export const useImageConverter = () => {
 
   const [onAcceptCallback, setOnAcceptCallback] = useState(null);
   const [onCancelCallback, setOnCancelCallback] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Comprimir con Canvas (FALLBACK SEGURO), en caso de fallo
   const compressWithCanvas = (file, options) => {
