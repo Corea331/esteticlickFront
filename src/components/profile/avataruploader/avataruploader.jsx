@@ -118,6 +118,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
     const processAfterConversion = async () => {
       if (!imageConverter.isOpen && pendingFile) {
         console.log('Modal cerrado, procesando resultado...');
+        console.log('imageConverter.conversionResult:', imageConverter.conversionResult);
 
         // El modal se cerró, verificar resultado
         if (imageConverter.conversionResult) {
@@ -125,6 +126,7 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
             console.log('Usando archivo convertido:', {
               name: imageConverter.conversionResult.converted.file.name,
               size: (imageConverter.conversionResult.converted.size / 1024 / 1024).toFixed(2) + 'MB',
+              type: imageConverter.conversionResult.converted.file.type,
               reduction: imageConverter.conversionResult.converted.reduction + '%'
             });
 
@@ -139,12 +141,6 @@ const AvatarUploader = ({ currentAvatar, onUploadComplete, compact = false }) =>
           } catch (error) {
             console.error('Error al subir imagen convertida:', error);
             setUploadError(error.message || 'Error al subir la imagen convertida');
-            // Intentar con el original como fallback
-            try {
-              await processFileUpload(pendingFile);
-            } catch (fallbackError) {
-              console.error('Fallback también falló:', fallbackError);
-            }
           }
         } else {
           console.log('Usuario canceló o no hubo conversión, usando original');

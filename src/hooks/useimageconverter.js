@@ -89,9 +89,16 @@ export const useImageConverter = () => {
 
   // ABRIR MODAL CON ARCHIVO
   const openConverter = (file, options = {}) => {
+    console.log('openConverter llamado con archivo:', {
+      name: file.name,
+      size: (file.size / 1024 / 1024).toFixed(2) + 'MB',
+      type: file.type
+    });
+    
     return new Promise((resolve, reject) => {
       setOriginalFile(file);
       setConversionOptions(prev => ({ ...prev, ...options }));
+      setIsOpen(true);
       
       // Crear preview
       const reader = new FileReader();
@@ -104,20 +111,32 @@ export const useImageConverter = () => {
       calculateConversion(file, { ...conversionOptions, ...options });
       
       // Guardar callbacks
-      setOnAcceptCallback(() => (result) => resolve(result));
-      setOnCancelCallback(() => () => reject(new Error('Conversión cancelada')));
+      setOnAcceptCallback(() => (result) => {
+        console.log('Callback onAccept ejecutado con resultado:', result);
+        resolve(result);
+      });
+
+      setOnCancelCallback(() => () => {
+        console.log('Conversión cancelada por usuario');
+        reject(new Error('Conversión cancelada'))
+      });
     });
   };
 
   // CERRAR MODAL
   const closeConverter = () => {
+    console.log('closeConverter llamado');
     resetConverter();
-    if (onCancelCallback) onCancelCallback();
+    if (onCancelCallback) {
+      onCancelCallback()
+    };
   };
 
   // ACEPTAR CONVERSIÓN
   const acceptConversion = () => {
+    console.log('acceptConversion llamado, conversionResult:', conversionResult);
     if (!conversionResult || !onAcceptCallback) {
+      console.error('No hay conversionResult o callback!');
       closeConverter();
       return null;
     }
@@ -131,22 +150,34 @@ export const useImageConverter = () => {
         type: conversionResult.converted.type,
         sizeMB: conversionResult.converted.sizeMB,
         reduction: conversionResult.converted.reduction,
-        width: conversionResult.converted.width,
-        height: conversionResult.converted.height
+        width: conversionResult.converted.width || conversionOptions.maxWidth,
+        height: conversionResult.converted.height || conversionOptions.maxHeight
       },
       keepOriginal: conversionOptions.keepOriginal
     };
+
+    console.log('Resultado enviado al callback:', {
+      name: result.file.name,
+      size: (result.file.size / 1024 / 1024).toFixed(2) + 'MB',
+      type: result.file.type,
+      reduction: result.converted.reduction + '%'
+    });
     
     showSuccess(`Imagen convertida a ${conversionOptions.format.toUpperCase()} (${conversionResult.converted.reduction}% menos)`);
     
-    if (onAcceptCallback) onAcceptCallback(result);
-    resetConverter();
+    onAcceptCallback(result);
+
+
+    setTimeout(() => {
+      resetConverter();
+    }, 100);
     
     return result;
   };
 
   // CALCULAR CONVERSIÓN
   const calculateConversion = async (file, options) => {
+    console.log('calculateConversion iniciando para:', file.name);
     setIsConverting(true);
     try{
 
@@ -162,13 +193,15 @@ export const useImageConverter = () => {
           type: `image/${options.format}`,
           scale: options.quality / 100
         });
+
+        console.log('image-conversion exitoso, creando File...');
         
         // Crear File real desde el Blob
         compressedFile = new File(
           [compressedData],
-          file.name.replace(/\.[^/.]+$/, '') + '.' + options.format,
+          `compressed_${Date.now()}.${options.format}`,
           {
-            type: compressedData.type,
+            type: `image/${options.format}`,
             lastModified: Date.now()
           }
         );
@@ -176,9 +209,9 @@ export const useImageConverter = () => {
           console.warn('image-conversion falló, usando Canvas:', imageConversionError);
           
           // FALLBACK A CANVAS
+          console.log('Usando fallback Canvas...');
           const canvasResult = await compressWithCanvas(file, options);
           compressedFile = canvasResult.file;
-          compressedData = compressedFile;
         }
       
         // Calcular reducción
@@ -186,32 +219,45 @@ export const useImageConverter = () => {
         const compressedSizeMB = (compressedFile.size / 1024 / 1024).toFixed(2);
         const reduction = ((1 - compressedFile.size / file.size) * 100).toFixed(1);
 
+        console.log('Resultados de compresión:', {
+          original: originalSizeMB + 'MB',
+          compressed: compressedSizeMB + 'MB',
+          reduction: reduction + '%',
+          fileName: compressedFile.name,
+          fileType: compressedFile.type
+        });
 
-        setConversionResult({
+        // Crear URL para preview
+        const previewUrl = URL.createObjectURL(compressedFile);
+
+        const result = {
           original: {
             name: file.name,
             size: file.size,
             type: file.type,
-            sizeMB: originalSizeMB,
-            width: 0,
-            height: 0,
+            sizeMB: originalSizeMB
           },
           converted: {
-            file: compressedFile,
+            file: compressedFile, // ARCHIVO COMPRIMIDO REAL
             size: compressedFile.size,
             type: compressedFile.type,
             sizeMB: compressedSizeMB,
             reduction: reduction,
             width: options.maxWidth,
-            height: options.maxHeight,
+            height: options.maxHeight
           },
-          preview: URL.createObjectURL(compressedFile),
+          preview: previewUrl,
           options
-        });
+        };
+        
+        setConversionResult(result);
+        console.log('conversionResult establecido correctamente');
+
       } catch (error) {
         console.error('Error calculando conversión:', error);
         showError('Error al procesar la imagen');
-        setConversionResult({
+        // En caso de error, usar archivo original pero marcarlo como no comprimido
+        const result = {
           original: {
             name: file.name,
             size: file.size,
@@ -227,7 +273,10 @@ export const useImageConverter = () => {
           },
           preview: URL.createObjectURL(file),
           options
-        });
+        };
+
+        setConversionResult(result);
+
       } finally {
         setIsConverting(false);
       }
@@ -245,6 +294,12 @@ export const useImageConverter = () => {
 
   // RESET
   const resetConverter = () => {
+    console.log('resetConverter llamado');
+    // Liberar URLs de objeto para evitar fugas de memoria
+    if (conversionResult?.preview) {
+      URL.revokeObjectURL(conversionResult.preview);
+    }
+    
     setOriginalFile(null);
     setConversionResult(null);
     setPreviewUrl(null);
@@ -258,17 +313,30 @@ export const useImageConverter = () => {
     setOnAcceptCallback(null);
     setOnCancelCallback(null);
     setIsConverting(false);
+    setIsOpen(false);
   };
 
-  // DETECTAR SI NECESITA CONVERSIÓN - AUMENTAR LÍMITE A 20MB
+  // DETECTAR SI NECESITA CONVERSIÓN
   const needsConversion = (file) => {
     const sizeMB = file.size / 1024 / 1024;
-    const isLarge = sizeMB > 5; // Aumentado a 5MB para permitir más
+    const isLarge = sizeMB > 2; // >2MB
     const isHeic = ['image/heic', 'image/heif', 'image/heif-sequence', 'image/heic-sequence'].includes(file.type);
     const isNotWebP = file.type !== 'image/webp';
     const isBmpOrTiff = ['image/bmp', 'image/tiff', 'image/tiff-fx'].includes(file.type);
     
-    return isLarge || isHeic || isNotWebP || isBmpOrTiff;
+    const needs = isLarge || isHeic || isNotWebP || isBmpOrTiff;
+    console.log('needsConversion:', {
+      name: file.name,
+      size: sizeMB.toFixed(2) + 'MB',
+      type: file.type,
+      isLarge,
+      isHeic,
+      isNotWebP,
+      isBmpOrTiff,
+      needs
+    });
+    
+    return needs;
   };
 
   // OBTENER TIPO DE ARCHIVO
@@ -298,7 +366,7 @@ export const useImageConverter = () => {
     originalFile,
     previewUrl,
     conversionOptions,
-    isOpen: !!originalFile,
+    isOpen,
     
     // Acciones
     openConverter,
@@ -313,7 +381,6 @@ export const useImageConverter = () => {
 
     // Métodos para debug
     getOriginalSize: () => originalFile ? originalFile.size : 0,
-
     getCompressedSize: () => conversionResult ? conversionResult.converted.size : 0
   };
 };
