@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react'
 import { useUser, useLogout, useExtendSession, checkAuth } from '../hooks'
 import { redirectToLogin, redirectToHome } from '../utils/navigation.js'
-import { showInfo, showWarning, showSuccess } from '../utils/notifications.js';
+import { showInfo, showWarning, showSuccess } from '../utils/notifications';
 
 const initialState = {
   user: null,

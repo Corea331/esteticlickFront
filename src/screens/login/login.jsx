@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useLogin } from '../../hooks'
 import { useAuth } from '../../context/authcontext'
-import { showSuccess, showError } from '../utils/notifications.js';
+import { showSuccess, showError } from '../utils/notifications';
 import { processApiError } from '../../utils/alerthandler.js'
 import './login.css'
 

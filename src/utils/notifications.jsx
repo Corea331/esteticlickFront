@@ -1,5 +1,6 @@
 import { notifications } from '@mantine/notifications';
 import { Check, X, AlertCircle, Info } from 'lucide-react';
+import { processApiError } from './alerthandler';
 
 /**
  * Sistema de notificaciones Mantine con API similar a AlertContext

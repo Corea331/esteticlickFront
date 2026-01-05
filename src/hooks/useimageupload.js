@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { showSuccess, showError } from '../utils/notifications.js';
+import { showSuccess, showError } from '../utils/notifications';
 import { useAuth } from '../context/authcontext';
 
 export const useImageUpload = () => {

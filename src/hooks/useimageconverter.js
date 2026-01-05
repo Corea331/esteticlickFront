@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as imageConversion from 'image-conversion';
-import { showSuccess, showError } from '../utils/notifications.js';
+import { showSuccess, showError } from '../utils/notifications';
 
 export const useImageConverter = () => {
   const [isConverting, setIsConverting] = useState(false);
