@@ -2,8 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { esteticlickQueryClient } from './apis/queryclient.js'
 import { AuthProvider } from './context/authcontext'
-import { AlertProvider } from './context/alertcontext'
-import AlertContainer from './components/ui/alert/alertcontainer'
+import { MantineProvider } from '@mantine/core'
+import { Notifications } from '@mantine/notifications'
 import NavigationHandler from './components/navigationhandler'
 import Layout from './components/layout/layout'
 import Home from './screens/home/home'
@@ -16,18 +16,27 @@ import Unauthorized from './screens/unauthorized/unauthorized'
 import ServicesPage from './screens/services/servicespage.jsx'
 import Profile from './screens/profile/profile.jsx'
 import './app.css'
+import '@mantine/core/styles.css'
+import '@mantine/notifications/styles.css'
 
 
 function App() {
   
   return (
     <QueryClientProvider client={esteticlickQueryClient}>
-      <AlertProvider>
+
+      <MantineProvider>
+
         <AuthProvider>
+
           <Router>
+
             <NavigationHandler />
-            <AlertContainer />
+
+            <Notifications position="top-right" />
+
             <Routes>
+
               {/* Rutas Públicas */}
               <Route path='/' element={<Layout><Home /></Layout>} />
               <Route path='/businesses' element={<Layout><BusinessesPage /></Layout>} />
@@ -49,10 +58,14 @@ function App() {
 
               {/* 404 */}
               <Route path='*' element={<Layout><div>404 - No Encontrado</div></Layout>} />
+
             </Routes>
+
           </Router>
+
         </AuthProvider>
-      </AlertProvider>
+        
+      </MantineProvider>
       
     </QueryClientProvider>
   )
