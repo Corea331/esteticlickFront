@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import * as imageConversion from 'image-conversion';
-import { useAlert } from '../context/alertcontext';
+import { showSuccess, showError } from '../utils/notifications.js';
 
 export const useImageConverter = () => {
-  const { showSuccess, showError } = useAlert();
   const [isConverting, setIsConverting] = useState(false);
   const [conversionResult, setConversionResult] = useState(null);
   const [originalFile, setOriginalFile] = useState(null);

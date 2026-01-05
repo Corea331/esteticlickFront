@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useLogin } from '../../hooks'
 import { useAuth } from '../../context/authcontext'
-import { useAlert } from '../../context/alertcontext'
+import { showSuccess, showError } from '../utils/notifications.js';
 import { processApiError } from '../../utils/alerthandler.js'
 import './login.css'
 
@@ -11,7 +11,6 @@ function Login() {
   const loginMutation = useLogin()
   const navigate = useNavigate()
   const { login } = useAuth()
-  const { showError, showSuccess } = useAlert()
   const emailInputRef = useRef(null)
 
   useEffect(() => {
@@ -47,7 +46,7 @@ function Login() {
       navigate('/')
     }catch(error) {
       const alertData = processApiError(error)
-      showError(alertData)
+      showError(alertData.message || alertData)
     }
   }
 

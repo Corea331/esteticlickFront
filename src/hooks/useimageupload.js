@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useAlert } from '../context/alertcontext';
+import { showSuccess, showError } from '../utils/notifications.js';
 import { useAuth } from '../context/authcontext';
 
 export const useImageUpload = () => {
-  const { showSuccess, showError } = useAlert();
   const { user, updateUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
 

@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react'
 import { useUser, useLogout, useExtendSession, checkAuth } from '../hooks'
 import { redirectToLogin, redirectToHome } from '../utils/navigation.js'
-import { useAlert } from './alertcontext'
+import { showInfo, showWarning, showSuccess } from '../utils/notifications.js';
 
 const initialState = {
   user: null,
@@ -78,7 +78,6 @@ export const AuthProvider = ({ children }) => {
   const { refetch: fetchUser } = useUser();
   const logoutMutation = useLogout();
   const extendSessionMutation = useExtendSession();
-  const { showInfo, showWarning, showSuccess } = useAlert() || {};
 
   // Ref para evitar multiples alarmas
   const warningShownRef = useRef(false);
@@ -100,9 +99,7 @@ export const AuthProvider = ({ children }) => {
       warningShownRef.current = false;
       lastWarningLevelRef.current = '';
 
-      if (showInfo) {
-        showInfo(message);
-      }
+      showInfo(message);
 
       // Emitir evento para permitir navegación segura
       setTimeout(() => {
@@ -113,53 +110,50 @@ export const AuthProvider = ({ children }) => {
 
   // Mostrar advertencia simple de sesión
   const showSessionWarning = useCallback((minutesLeft) => {
-    if (showWarning) {
-      showWarning(
-        `Tu sesión expirará en ${minutesLeft} minutos.`,
-        'Sesión por expirar',
-        {
-          autoDismiss: true,
-          duration: 10000,
-        }
-      );
-    }
+
+    showWarning(
+      `Tu sesión expirará en ${minutesLeft} minutos.`,
+      'Sesión por expirar',
+      {
+        autoDismiss: true,
+        duration: 10000,
+      }
+    );
   }, [showWarning]);
 
   // Mostrar oferta para extender sesión
   const showExtendSessionOffer = useCallback((minutesLeft) => {
-    if (showWarning) {
-      showWarning(
-        `Tu sesión expirará en ${minutesLeft} minutos. ¿Deseas extenderla?`,
-        'Extender sesión',
-        {
-          autoDismiss: false,
-          children: (
-            <div className="d-flex gap-2 mt-2">
-              <button
-                className="btn btn-sm btn-primary"
-                onClick={async () => {
-                  try {
-                    await extendSessionMutation.mutateAsync({ minutes: 120 });
-                  } catch (error) {
-                    console.error('Error al extender sesión: ', error);
-                  }
-                }}
-              >
-                Sí, extender sesión
-              </button>
-              <button
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => {
-                  warningShownRef.current = false;
-                }}
-              >
-                No, gracias
-              </button>
-            </div>
-          )
-        }
-      );
-    }
+    showWarning(
+      `Tu sesión expirará en ${minutesLeft} minutos. ¿Deseas extenderla?`,
+      'Extender sesión',
+      {
+        autoDismiss: false,
+        children: (
+          <div className="d-flex gap-2 mt-2">
+            <button
+              className="btn btn-sm btn-primary"
+              onClick={async () => {
+                try {
+                  await extendSessionMutation.mutateAsync({ minutes: 120 });
+                } catch (error) {
+                  console.error('Error al extender sesión: ', error);
+                }
+              }}
+            >
+              Sí, extender sesión
+            </button>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => {
+                warningShownRef.current = false;
+              }}
+            >
+              No, gracias
+            </button>
+          </div>
+        )
+      }
+    );
   }, [showWarning, extendSessionMutation]);
 
   // Escuchar eventos de token expirado desde api.js
@@ -198,17 +192,15 @@ export const AuthProvider = ({ children }) => {
           break;
 
         case 'IMMINENT':
-          if (showWarning) {
-            showWarning(
-              `¡Sesión a punto de expirar! ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'} restantes`,
-              'Sesión por expirar',
-              {
-                autoDismiss: false,
-                variant: 'danger',
-                duration: 30000,
-              }
-            );
-          }
+          showWarning(
+            `¡Sesión a punto de expirar! ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'} restantes`,
+            'Sesión por expirar',
+            {
+              autoDismiss: false,
+              variant: 'danger',
+              duration: 30000,
+            }
+          );
           break;
 
         case 'URGENT':
@@ -232,9 +224,8 @@ export const AuthProvider = ({ children }) => {
 
     const handleSessionExtended = (event) => {
       const { message } = event.detail || {};
-      if (showSuccess) {
-        showSuccess(message || 'Sesión extendida', 'Sesión activa');
-      }
+
+      showSuccess(message || 'Sesión extendida', 'Sesión activa');
 
       dispatch({ type: 'CLEAR_SESSION_WARNING' });
       warningShownRef.current = false;
@@ -258,9 +249,7 @@ export const AuthProvider = ({ children }) => {
         lastWarningLevelRef.current = '';
       }
 
-      if (showSuccess) {
-        showSuccess('Sesión renovada exitosamente');
-      }
+      showSuccess('Sesión renovada exitosamente');
     };
 
     const handleSessionError = (event) => {
