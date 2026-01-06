@@ -1,0 +1,34 @@
+@import '../../styles/colors.css';
+
+/* Estilos para el header Mantine */
+.mantine-AppShell-header {
+  background: linear-gradient(135deg, var(--color-header) 0%, #7a957c 100%) !important;
+  border-bottom: 3px solid var(--color-botones) !important;
+  padding: var(--mantine-spacing-md) !important;
+}
+
+/* Ajustes para el logo */
+.mantine-Avatar-root {
+  border: 3px solid var(--color-blanco) !important;
+  box-shadow: var(--sombra-media) !important;
+  transition: var(--transicion-suave) !important;
+}
+
+.mantine-Avatar-root:hover {
+  border-color: var(--color-botones) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Estilos para botones activos */
+.mantine-Button-root[data-active="true"] {
+  background: linear-gradient(135deg, var(--color-botones) 0%, var(--color-botones-hover) 100%) !important;
+  border-color: var(--color-botones) !important;
+  color: var(--color-blanco) !important;
+  box-shadow: var(--sombra-suave) !important;
+}
+
+/* Menú desplegable */
+.mantine-Menu-dropdown {
+  background: var(--color-blanco) !important;
+  border: 1px solid var(--color-borde) !important;
+}

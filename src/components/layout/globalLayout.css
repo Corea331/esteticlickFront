@@ -1,0 +1,39 @@
+@import '../../styles/colors.css';
+
+/* Layout principal */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-fondo) 0%, #f0ede6 100%);
+}
+
+/* Header Mantine */
+.mantine-header {
+  background: linear-gradient(135deg, var(--color-header) 0%, #7a957c 100%) !important;
+  border-bottom: 3px solid var(--color-botones) !important;
+  padding: 0 !important; /* El padding lo maneja el Header interno */
+}
+
+/* Footer Mantine */
+.mantine-footer {
+  background: linear-gradient(135deg, var(--color-footer) 0%, #5c725e 100%) !important;
+  border-top: 3px solid var(--color-botones) !important;
+  padding: 0 !important; /* El padding lo maneja el Footer interno */
+}
+
+/* Main content */
+.layout-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, var(--color-fondo) 0%, #f0ede6 100%);
+  min-height: calc(100vh - 140px - 180px); /* Aproximado */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .layout-main {
+    min-height: calc(100vh - 120px - 200px); /* Alturas móvil */
+  }
+}
