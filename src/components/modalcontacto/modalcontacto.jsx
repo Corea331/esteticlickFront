@@ -1,7 +1,19 @@
-import { Modal, Form } from "react-bootstrap"
 import { useState } from "react"
+import { 
+  Modal, 
+  TextInput, 
+  Textarea, 
+  Button, 
+  Group, 
+  LoadingOverlay 
+} from "@mantine/core"
 import { useCreateMessage } from '../../hooks'
-import './modalcontacto.css'
+import { 
+  showSuccess,
+  showError,
+} from '../../utils/notifications'
+import { Phone, X, Send } from 'lucide-react'
+
 
 
 
@@ -21,79 +33,111 @@ function ModalContacto({ show, handleClose }) {
       await createContactMutation.mutateAsync(formData)
       handleClose()
       setFormData({ name: '', email: '', subject: '', phone: '', message: '' })
-      alert('Mensaje enviado exitosamente!')
+
+      showSuccess("Tu mensaje ha sido enviado exitosamente")
     } catch (error) {
-      alert('Error al enviar el mensaje')
+      showError("No se pudo enviar el mensaje. Por favor, inténtalo nuevamente.")
     }
   }
 
+  const handleInputChange = (field) => (e) => {
+    setFormData({ ...formData, [field]: e.target.value })
+  }
 
   return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title><i className="bi bi-telephone-fill"></i> Contacto</Modal.Title>
-      </Modal.Header>
+    <Modal
+      opened={show}
+      onClose={handleClose}
+      title={
+        <Group gap="xs">
+          <Phone size={20} />
+          <span>Contacto</span>
+        </Group>
+      }
+      size="lg"
+      centered
+      overlayProps={{
+        backgroundOpacity: 0.55,
+        blur: 3,
+      }}
+      closeButtonProps={{
+        'aria-label': 'Cerrar modal',
+      }}
+    >
+      <LoadingOverlay visible={createContactMutation.isLoading} overlayProps={{ blur: 2 }} />
+      
       <form onSubmit={handleSubmit}>
-        <Modal.Body>
-          <Form.Group className="mb-3">
-            <Form.Control 
-            type="text"
-            placeholder="Nombre"
-            value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-            required
-          />
-          </Form.Group>
-          
-          <Form.Group className="mb-3">
-            <Form.Control 
-            type="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            required
-          />
-          </Form.Group>
-          
-          <Form.Group className="mb-3">
-            <Form.Control 
-            type="text"
-            placeholder="Asunto"
-            value={formData.subject}
-            onChange={(e) => setFormData({...formData, subject: e.target.value})}
-            required
-          />
-          </Form.Group>
-          
-          <Form.Group className="mb-3">
-            <Form.Control 
-            type="text"
-            placeholder="Telefono"
-            value={formData.phone}
-            onChange={(e) => setFormData({...formData, phone: e.target.value})}
-            required
-          />
-          </Form.Group>
-          
-          <Form.Group className="mb-0">
-            <Form.Control 
-            as="textarea"
-            rows={4}
-            placeholder="Mensaje"
-            value={formData.message}
-            onChange={(e) => setFormData({...formData, message: e.target.value})}
-            required
-          />
-          </Form.Group>
-          
-        </Modal.Body>
+        <TextInput
+          label="Nombre"
+          placeholder="Tu nombre completo"
+          value={formData.name}
+          onChange={handleInputChange('name')}
+          required
+          mb="md"
+          size="md"
+        />
 
-        <Modal.Footer>
-          <button className="btn" type="button" onClick={handleClose}><i className="bi bi-x-lg"></i> Cerrar</button>
-          <button className="btn" type="submit" disabled={createContactMutation.isLoading}>
-            <i className="bi bi-send-check-fill"></i> {createContactMutation.isLoading ? 'Enviando...' : 'Enviar Mensaje'}
-          </button>
-        </Modal.Footer>
+        <TextInput
+          label="Email"
+          placeholder="tu@email.com"
+          type="email"
+          value={formData.email}
+          onChange={handleInputChange('email')}
+          required
+          mb="md"
+          size="md"
+        />
+
+        <TextInput
+          label="Asunto"
+          placeholder="Motivo de tu contacto"
+          value={formData.subject}
+          onChange={handleInputChange('subject')}
+          required
+          mb="md"
+          size="md"
+        />
+
+        <TextInput
+          label="Teléfono"
+          placeholder="Número de contacto"
+          value={formData.phone}
+          onChange={handleInputChange('phone')}
+          required
+          mb="md"
+          size="md"
+        />
+
+        <Textarea
+          label="Mensaje"
+          placeholder="Escribe tu mensaje aquí..."
+          value={formData.message}
+          onChange={handleInputChange('message')}
+          required
+          minRows={4}
+          mb="xl"
+          size="md"
+        />
+
+        <Group justify="flex-end" gap="md">
+          <Button
+            variant="light"
+            color="gray"
+            onClick={handleClose}
+            leftSection={<X size={16} />}
+          >
+            Cerrar
+          </Button>
+          
+          <Button
+            type="submit"
+            color="teal"
+            loading={createContactMutation.isLoading}
+            leftSection={!createContactMutation.isLoading && <Send size={16} />}
+          >
+            {createContactMutation.isLoading ? 'Enviando...' : 'Enviar Mensaje'}
+          </Button>
+        </Group>
       </form>
     </Modal>
   )
