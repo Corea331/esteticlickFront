@@ -1,7 +1,7 @@
 import { AppShell } from '@mantine/core';
 import Header from '../header/globalHeader';
 import Footer from '../footer/globalFooter';
-import './globallayout.css';
+import './globalLayout.css';
 
 const Layout = ({ children }) => {
 
