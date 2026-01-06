@@ -7,9 +7,9 @@ const Layout = ({ children }) => {
 
   return (
     <AppShell
-      header={{ height: { base: 100, sm: 120 } }}
+      padding="md"
+      header={{ height: 180 }}
       footer={{ height: { base: 100, sm: 120 } }}
-      padding='md'
     >
       {/* Header con estilos del CSS */}
       <AppShell.Header 
