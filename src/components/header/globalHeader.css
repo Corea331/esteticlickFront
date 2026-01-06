@@ -1,10 +1,17 @@
+/* src/components/layout/globalHeader.css */
 @import '../../styles/colors.css';
 
 /* Estilos para el header Mantine */
 .mantine-AppShell-header {
   background: linear-gradient(135deg, var(--color-header) 0%, #7a957c 100%) !important;
   border-bottom: 3px solid var(--color-botones) !important;
-  padding: var(--mantine-spacing-md) !important;
+  padding: 0 !important; /* Quitamos padding global */
+}
+
+/* Contenedor interno del header */
+.mantine-Container-root {
+  height: 100% !important;
+  padding: 1rem !important;
 }
 
 /* Ajustes para el logo */
@@ -27,8 +34,39 @@
   box-shadow: var(--sombra-suave) !important;
 }
 
+/* Mejoras para botones inactivos */
+.mantine-Button-root:not([data-active="true"]) {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.mantine-Button-root:not([data-active="true"]):hover {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  border-color: var(--color-botones) !important;
+  color: white !important;
+}
+
 /* Menú desplegable */
 .mantine-Menu-dropdown {
   background: var(--color-blanco) !important;
   border: 1px solid var(--color-borde) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Responsive para el header */
+@media (max-width: 768px) {
+  .mantine-AppShell-header {
+    height: 100px !important;
+  }
+  
+  .mantine-Avatar-root {
+    width: 50px !important;
+    height: 50px !important;
+    margin-left: 0.5rem !important;
+  }
+  
+  .mantine-Text-root {
+    font-size: 1.1rem !important;
+  }
 }
