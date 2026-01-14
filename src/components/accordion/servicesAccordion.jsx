@@ -7,7 +7,7 @@ import {
   Group
 } from "@mantine/core"
 import Accordion from "./globalAccordion"
-import GenericTable from "../generictable/genericTable"
+import GenericTable from "../reutilizabletable/genericTable"
 import { navigateTo } from "../../utils/navigation"
 import { useServices } from "../../hooks"
 import { useBusinesses } from "../../hooks"
