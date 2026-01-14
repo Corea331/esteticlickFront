@@ -1,15 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Group, Text, Button, Avatar, Container, Box } from '@mantine/core';
+import { Group, Text, Button, Avatar, Container, Box, Menu, Stack } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { Home, Scissors, Building2, Phone } from 'lucide-react';
+import { Home, Scissors, Building2, Phone, LogIn, UserCircle, LogOut, Settings } from 'lucide-react';
 import { useDisclosure } from '@mantine/hooks';
 import Logo from '../../assets/logo.png';
 import ModalContacto from '../modales/modalContacto';
+import { useAuth } from '../../context/authcontext'; // <-- AÑADIR ESTO
 
 function Header() {
   const [modalContactoOpened, { open, close }] = useDisclosure(false);
   const location = useLocation();
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const { isAuthenticated, user, logout } = useAuth(); // <-- AÑADIR AUTH CONTEXT
   
   const navItems = [
     { path: '/', label: 'Inicio', icon: <Home size={18} /> },
@@ -18,6 +20,12 @@ function Header() {
   ];
   
   const isActive = (path) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    // Puedes redirigir al home si lo deseas
+    // navigate('/');
+  };
 
   return (
     <>
@@ -72,6 +80,62 @@ function Header() {
               >
                 Contacto
               </Button>
+              
+              {/* Botón Login/Usuario */}
+              {isAuthenticated ? (
+                <Menu shadow="md" width={200} position="bottom-end">
+                  <Menu.Target>
+                    <Button
+                      variant="light"
+                      color="teal"
+                      leftSection={<UserCircle size={18} />}
+                      size="sm"
+                    >
+                      Mi Cuenta
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Label>
+                      <Text size="sm" fw={600}>{user?.name || 'Usuario'}</Text>
+                      <Text size="xs" c="dimmed">{user?.email}</Text>
+                    </Menu.Label>
+                    <Menu.Divider />
+                    <Menu.Item 
+                      component={Link}
+                      to="/dashboard"
+                      leftSection={<Settings size={14} />}
+                    >
+                      Panel de Control
+                    </Menu.Item>
+                    <Menu.Item 
+                      component={Link}
+                      to="/profile"
+                      leftSection={<UserCircle size={14} />}
+                    >
+                      Mi Perfil
+                    </Menu.Item>
+                    <Menu.Divider />
+                    <Menu.Item 
+                      color="red"
+                      leftSection={<LogOut size={14} />}
+                      onClick={handleLogout}
+                    >
+                      Cerrar Sesión
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              ) : (
+                <Button
+                  component={Link}
+                  to="/login"
+                  variant="filled"
+                  color="green"
+                  leftSection={<LogIn size={18} />}
+                  size="sm"
+                >
+                  Iniciar Sesión
+                </Button>
+              )}
             </Group>
             
             {/* Menú móvil (se puede añadir después) */}
