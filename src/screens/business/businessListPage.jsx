@@ -10,7 +10,7 @@ import {
   Loader
 } from '@mantine/core'
 import { RefreshCw } from 'lucide-react'
-import GenericTable from '../../components/generictable/genericTable'
+import GenericTable from '../../components/reutilizabletable/genericTable.jsx'
 import { reloadPage } from '../../utils/navigation.js'
 import { useBusinesses } from '../../hooks'
 
