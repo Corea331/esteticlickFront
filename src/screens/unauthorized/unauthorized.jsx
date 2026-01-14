@@ -1,37 +1,40 @@
-import { Link } from "react-router-dom"
-import './unauthorized.css'
+import { Link } from "react-router-dom";
+import { 
+  Paper, 
+  Title, 
+  Text, 
+  Button, 
+  Group, 
+  Stack 
+} from "@mantine/core";
+import { 
+  ShieldAlert, 
+  Home, 
+  ArrowLeft 
+} from "lucide-react";
 
 function Unauthorized() {
   return (
-    <div className="unauthorized-container text-center py-5">
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-md-8 col-lg-6">
-            <div className="card shadow">
-              <div className="card-body p-5">
-                <h1 className="display-1 text-danger mb-4">
-                  <i className="bi bi-shield-exclamation"></i>
-                </h1>
-                <h2 className="mb-4">Acceso No Autorizado</h2>
-                <p className="lead mb-4">
-                  No tienes permisos suficientes para acceder a esta página.
-                </p>
-                <div className="d-flex justify-content-center gap-3">
-                  <Link to="/" className="btn btn-primary">
-                    <i className="bi bi-house me-2"></i> Volver al inicio
-                  </Link>
-                  <button 
-                    onClick={() => window.history.back()} 
-                    className="btn btn-outline-secondary"
-                  >
-                    <i className="bi bi-arrow-left me-2"></i> Volver atrás
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
+      <Paper shadow="md" p="xl" radius="lg" withBorder style={{ maxWidth: "500px", width: "100%" }}>
+        <Stack align="center" spacing="xl">
+          <ShieldAlert size={80} style={{ color: "#fa5252" }} />
+          
+          <Stack spacing="md" align="center">
+            <Title order={2} ta="center">Acceso No Autorizado</Title>
+            <Text c="dimmed" ta="center">No tienes permisos para acceder a esta página.</Text>
+          </Stack>
+          
+          <Group>
+            <Button component={Link} to="/" leftSection={<Home size={18} />} variant="filled">
+              Inicio
+            </Button>
+            <Button onClick={() => window.history.back()} leftSection={<ArrowLeft size={18} />} variant="outline">
+              Atrás
+            </Button>
+          </Group>
+        </Stack>
+      </Paper>
     </div>
   );
 }

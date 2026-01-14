@@ -1,53 +1,75 @@
-import { AppShell } from '@mantine/core';
-import Header from '../header/globalHeader';
+import { Box } from '@mantine/core';
+import { useHeadroom } from '@mantine/hooks';
+import Header from '../navigation/globalHeader';
+import StickyNavbar from '../navigation/stickyNavbar';
 import Footer from '../footer/globalFooter';
-import './globalLayout.css';
 
-const Layout = ({ children }) => {
-
+const GlobalLayout = ({ children }) => {
+  // useHeadroom nos da un valor booleano cuando scrolleamos hacia abajo
+  const pinned = useHeadroom({ fixedAt: 0 });
+  
   return (
-    <AppShell
-      padding="md"
-      header={{ height: 180 }}
-      footer={{ height: { base: 100, sm: 120 } }}
+    <Box
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--color-fondo)',
+      }}
     >
-      {/* Header con estilos del CSS */}
-      <AppShell.Header 
-        className="mantine-header"
-        withBorder={false}
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 1000,
-        }}
-      >
-        <Header />
-      </AppShell.Header>
-
+      {/* Contenedor para el header sticky */}
+      <Box style={{ position: 'relative', height: '150' }}>
+        {/* Header - STICKY, se mueve con el scroll */}
+        <Box
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 200,
+            background: 'var(--color-header)',
+            borderBottom: '3px solid var(--color-botones)',
+          }}
+        >
+          <Header />
+        </Box>
+        
+        {/* Navbar - También sticky, debajo del header */}
+        <Box
+          style={{
+            position: 'fixed',
+            width: '100%',
+            top: 0, // Debajo del header (ajustar según altura del header)
+            zIndex: 199,
+          }}
+        >
+          <StickyNavbar />
+        </Box>
+      </Box>
+      
       {/* Contenido principal */}
-      <AppShell.Main 
-        className="layout-main"
+      <Box
         style={{
-          minHeight: 'calc(100vh - 260px)', // 120px header + 140px footer
-          overflowY: 'auto',
+          flex: 1,
+          padding: '1rem',
+          maxWidth: '100%',
+          width: '100%',
+          margin: '0 auto',
         }}
       >
         {children}
-      </AppShell.Main>
-
-      {/* Footer con estilos del CSS */}
-      <AppShell.Footer
-        className="mantine-footer"
-        withBorder={false}
+      </Box>
+      
+      {/* Footer */}
+      <Box
         style={{
-          position: 'relative',
-          bottom: 0,
+          background: 'var(--color-footer)',
+          borderTop: '3px solid var(--color-botones)',
+          marginTop: 'auto',
         }}
       >
         <Footer />
-      </AppShell.Footer>
-    </AppShell>
+      </Box>
+    </Box>
   );
 };
 
-export default Layout;
+export default GlobalLayout;

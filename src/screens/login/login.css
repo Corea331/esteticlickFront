@@ -1,6 +1,4 @@
-@import '../../styles/colors.css';
-
-/* Contenedor principal del login */
+/* Variables CSS para futura migración a Tailwind */
 .login-container[class] {
   background-color: var(--color-fondo) !important;
   min-height: 100vh;
@@ -8,7 +6,6 @@
   align-items: center;
 }
 
-/* Card del login */
 .login-container[class] .login-card[class] {
   background: linear-gradient(135deg, var(--color-header) 0%, #7a957c 100%);
   border: none;
@@ -16,7 +13,6 @@
   box-shadow: var(--sombra-media);
 }
 
-/* Título */
 .login-container[class] .login-title[class] {
   color: var(--color-blanco);
   text-align: center;
@@ -24,7 +20,6 @@
   font-weight: 600;
 }
 
-/* Inputs */
 .login-container[class] .login-input[class] {
   border: 2px solid transparent;
   border-radius: var(--border-radius);
@@ -39,7 +34,6 @@
   background: var(--color-blanco);
 }
 
-/* Botón */
 .login-container[class] .login-btn[class] {
   background: linear-gradient(135deg, var(--color-botones) 0%, var(--color-botones-hover) 100%);
   border: none;
@@ -72,7 +66,6 @@
   font-weight: 500;
 }
 
-/* Labels */
 .login-container[class] .form-label[class] {
   color: var(--color-blanco);
   font-weight: 500;

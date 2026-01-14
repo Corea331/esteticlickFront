@@ -8,16 +8,17 @@ import NavigationHandler from './components/navigationhandler'
 import Layout from './components/layout/globalLayout'
 import Home from './screens/home/home'
 import Login from './screens/login/login'
-import BusinessesPage from './screens/business/businesspage'
+import BusinessesPage from './screens/business/businessListPage'
 import IntegratedDashoard from './screens/dashboard/integrateddashboard'
 import PrivateRoute from './components/routes/privateroute'
 import PublicOnlyRoute from './components/routes/publiconlyroute'
 import Unauthorized from './screens/unauthorized/unauthorized'
-import ServicesPage from './screens/services/servicespage.jsx'
+import ServicesPage from './screens/services/servicesListPage.jsx'
 import Profile from './screens/profile/profile.jsx'
 import './app.css'
 import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
+import '@mantine/carousel/styles.css';
 
 
 function App() {

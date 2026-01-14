@@ -1,13 +1,34 @@
 import { useState, useEffect } from 'react';
+import {
+  Container,
+  Grid,
+  Box,
+  LoadingOverlay,
+  Title,
+  Text,
+  Button,
+  Alert,
+  Paper,
+  Stack,
+  Group
+} from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
+import {
+  AlertCircle,
+  RefreshCw,
+  User,
+  ArrowLeft
+} from 'lucide-react';
 import { apiRequest } from '../../apis/apicore';
 import { useAuth } from '../../context/authcontext';
 import { useImageUpload } from '../../hooks/useimageupload';
-import ProfileLayout from '../../components/profile/components/profilelayout/profilelayout.jsx';
-import ProfileSidebar from '../../components/profile/components/profilesidebar/profilesidebar.jsx';
-import ProfileInfo from '../../components/profile/components/profileinfo/profileinfo.jsx';
-import ProfileEdit from '../../components/profile/components/profileedit/profileedit.jsx';
-import ProfileAvatar from '../../components/profile/components/profileavatar/profileavatar.jsx';
-import './profile.css';
+import { 
+  ProfileAvatar, 
+  ProfileEdit, 
+  ProfileInfo, 
+  ProfileLayout, 
+  ProfileSidebar, 
+} from '../../components/profile';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('info');
@@ -17,6 +38,8 @@ const Profile = () => {
   
   const { user: authUser, updateUser } = useAuth();
   const { getAvatarUrl } = useImageUpload();
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isTablet = useMediaQuery('(max-width: 992px)');
 
   // Cargar datos del perfil
   useEffect(() => {
@@ -25,11 +48,9 @@ const Profile = () => {
       setError(null);
       
       try {
-        // Si ya tenemos datos del usuario en auth, usamos esos
         if (authUser) {
           setProfile(authUser);
         } else {
-          // Si no, hacemos una petición para obtener datos completos
           const userData = await apiRequest('/user');
           setProfile(userData);
         }
@@ -67,7 +88,6 @@ const Profile = () => {
       const userData = await apiRequest('/user');
       setProfile(userData);
       
-      // Actualizar también en el contexto de auth
       if (updateUser) {
         updateUser(userData);
       }
@@ -81,54 +101,61 @@ const Profile = () => {
 
   if (isLoading) {
     return (
-      <div className="profile-page">
-        <div className="container py-5">
-          <div className="d-flex justify-content-center align-items-center min-vh-50">
-            <div className="text-center">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Cargando...</span>
-              </div>
-              <p className="mt-3 text-muted">Cargando perfil...</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Container size="xl" py="xl">
+        <Box style={{ height: '50vh' }}>
+          <LoadingOverlay 
+            visible={isLoading} 
+            zIndex={1000} 
+            overlayProps={{ radius: "sm", blur: 2 }}
+            loaderProps={{ type: 'dots' }}
+          />
+        </Box>
+      </Container>
     );
   }
 
   if (error && !profile) {
     return (
-      <div className="profile-page">
-        <div className="container py-5">
-          <div className="text-center">
-            <h4 className="text-muted mb-3">{error}</h4>
-            <button 
-              onClick={refetchProfile} 
-              className="btn btn-primary"
-            >
-              Reintentar
-            </button>
-          </div>
-        </div>
-      </div>
+      <Container size="xl" py="xl">
+        <Stack align="center" justify="center" style={{ height: '50vh' }}>
+          <Alert 
+            icon={<AlertCircle size={20} />}
+            title="Error"
+            color="red"
+            variant="light"
+            w={isMobile ? '100%' : 400}
+          >
+            <Text ta="center">{error}</Text>
+          </Alert>
+          <Button
+            onClick={refetchProfile}
+            leftSection={<RefreshCw size={16} />}
+            variant="light"
+            mt="md"
+          >
+            Reintentar
+          </Button>
+        </Stack>
+      </Container>
     );
   }
 
   if (!profile && !isLoading) {
     return (
-      <div className="profile-page">
-        <div className="container py-5">
-          <div className="text-center">
-            <h4 className="text-muted mb-3">No se encontraron datos del perfil</h4>
-            <button 
-              onClick={refetchProfile} 
-              className="btn btn-primary"
-            >
-              Cargar datos
-            </button>
-          </div>
-        </div>
-      </div>
+      <Container size="xl" py="xl">
+        <Stack align="center" justify="center" style={{ height: '50vh' }}>
+          <Text size="lg" c="dimmed" ta="center">
+            No se encontraron datos del perfil
+          </Text>
+          <Button
+            onClick={refetchProfile}
+            leftSection={<User size={16} />}
+            variant="light"
+          >
+            Cargar datos
+          </Button>
+        </Stack>
+      </Container>
     );
   }
 
@@ -179,38 +206,70 @@ const Profile = () => {
   };
 
   return (
-    <div className="profile-page">
-      <div className="container py-4">
-        {/* Header de la página */}
-        <div className="mb-4">
-          <h1 className="h2 mb-1">Mi Perfil</h1>
-          <p className="text-muted mb-0">Administra tu información personal</p>
-        </div>
+    <Container size="xl" py={isMobile ? 'md' : 'xl'}>
+      {/* Header de la página */}
+      <Box mb={isMobile ? 'lg' : 'xl'}>
+        <Title order={1} size={isMobile ? 'h3' : 'h2'} mb="xs">
+          Mi Perfil
+        </Title>
+        <Text size="sm" c="dimmed">
+          Administra tu información personal
+        </Text>
+      </Box>
 
-        {/* Contenedor principal con sidebar y layout */}
-        <div className="profile-container">
-          {/* Sidebar a la izquierda */}
-          <div className="profile-sidebar-wrapper">
+      {/* Contenedor principal con sidebar y layout */}
+      <Grid gutter={isMobile ? 'md' : 'lg'}>
+        {/* Sidebar a la izquierda */}
+        <Grid.Col 
+          span={{ 
+            base: 12, 
+            md: 4,
+            lg: 3 
+          }}
+        >
+          <Box
+            pos={isTablet ? 'static' : 'sticky'}
+            top={isTablet ? 0 : '1rem'}
+          >
             <ProfileSidebar
               profile={profile}
               currentAvatar={currentAvatar}
               formatDate={formatDate}
             />
-          </div>
+          </Box>
+        </Grid.Col>
 
-          {/* Layout con tabs a la derecha */}
-          <div className="profile-layout-wrapper">
-            <ProfileLayout
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-            >
-              {/* Solo el contenido del tab activo va aquí */}
-              {renderTabContent()}
-            </ProfileLayout>
-          </div>
-        </div>
-      </div>
-    </div>
+        {/* Layout con tabs a la derecha */}
+        <Grid.Col 
+          span={{ 
+            base: 12, 
+            md: 8,
+            lg: 9 
+          }}
+        >
+          <Paper
+            withBorder
+            radius="lg"
+            shadow="sm"
+            style={{
+              minHeight: isMobile ? 400 : 500,
+              overflow: 'hidden'
+            }}
+          >
+            <Box p={isMobile ? 'md' : 'lg'}>
+              <ProfileLayout
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+              >
+                <Box pt="md" pb="xl">
+                  {renderTabContent()}
+                </Box>
+              </ProfileLayout>
+            </Box>
+          </Paper>
+        </Grid.Col>
+      </Grid>
+    </Container>
   );
 };
 

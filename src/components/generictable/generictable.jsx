@@ -1,6 +1,27 @@
 import { useState, useMemo } from "react"
-import SearchBox from '../searchbox/searchbox'
-import './generictable.css'
+import { 
+  Table, 
+  Pagination, 
+  Group, 
+  Box, 
+  ActionIcon,
+  Loader,
+  Text,
+  Badge,
+  Anchor,
+  Stack,
+} from "@mantine/core"
+import { useMediaQuery } from "@mantine/hooks"
+import { 
+  ChevronUp, 
+  ChevronDown, 
+  ChevronsUpDown,
+  Star,
+  Link as LinkIcon,
+  Check,
+  X
+} from "lucide-react"
+import SearchBox from "../searchbox/globalSearchBox"
 
 const GenericTable = ({
   data = [],
@@ -12,7 +33,6 @@ const GenericTable = ({
   pagination = false,
   itemsPerPage = 10,
   className = '',
-  rowClassName = '',
   onRowClick,
   actions = null,
 }) => {
@@ -21,275 +41,409 @@ const GenericTable = ({
     sortDirection: 'asc',
     currentPage: 1,
     searchTerm: '',
-  });
+  })
 
-  const {sortField, sortDirection, currentPage, searchTerm} = tableState;
+  const { sortField, sortDirection, currentPage, searchTerm } = tableState
+  const isMobile = useMediaQuery('(max-width: 768px)')
+  const isSmallMobile = useMediaQuery('(max-width: 480px)')
 
-  // Actualizar el estado de la tabla
   const updateTableState = (updates) => {
-    setTableState(prev => ({ ...prev, ...updates }));
+    setTableState(prev => ({ ...prev, ...updates }))
   }
 
-  // Filtrar datos si se puede
+  // Filtrar datos
   const filteredData = useMemo(() => {
-    if(!searchable || !searchTerm ) return data;
+    if (!searchable || !searchTerm) return data
 
-    return data.filter(item => 
+    return data.filter(item =>
       columns.some(column =>
-        String(item[column.key])
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+        String(item[column.key] || '')
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
       )
-    );
-  }, [data, searchTerm, searchable, columns]);
+    )
+  }, [data, searchTerm, searchable, columns])
 
-  // Ordernar los datos de la tabla
+  // Ordenar datos
   const sortedData = useMemo(() => {
-    if(!sortable || !sortField) return filteredData;
+    if (!sortable || !sortField) return filteredData
 
     return [...filteredData].sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
-      
-      if(sortDirection === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      const aValue = a[sortField]
+      const bValue = b[sortField]
+
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
       } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
       }
-    });
-  }, [filteredData, sortField, sortDirection, sortable]);
+    })
+  }, [filteredData, sortField, sortDirection, sortable])
 
   // Paginación
   const paginatedData = useMemo(() => {
-    if(!pagination) return sortedData;
+    if (!pagination) return sortedData
 
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return sortedData.slice(startIndex, startIndex + itemsPerPage);
-  }, [sortedData, currentPage, itemsPerPage, pagination]);
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return sortedData.slice(startIndex, startIndex + itemsPerPage)
+  }, [sortedData, currentPage, itemsPerPage, pagination])
 
-  // Cantidad total de paginas
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
 
-  //  Manejo del ordenamiento
   const handleSort = (field) => {
-    if(!sortable) return;
+    if (!sortable) return
 
-    if(sortField === field) {
+    if (sortField === field) {
       updateTableState({
         sortDirection: sortDirection === 'asc' ? 'desc' : 'asc'
-      });
+      })
     } else {
       updateTableState({
         sortField: field,
         sortDirection: 'asc'
-      });
+      })
     }
-  };
-
-  // Manejo del cambio de página
-  const handlePageChange = (newPage) => {
-    updateTableState({currentPage: newPage});
   }
 
+  const handlePageChange = (newPage) => {
+    updateTableState({ currentPage: newPage })
+  }
 
-  // Manejo de la busqueda
   const handleSearch = (term) => {
     updateTableState({
       searchTerm: term,
       currentPage: 1
-    });
-  };
+    })
+  }
 
-  // Renderizar el icono de ordenamiento
-  const renderSortIcon =(field) => {
-    if(!sortable || sortField !== field) return '↕️';
-    return sortDirection === 'asc' ? '⬆️' : '⬇️';
+  const renderSortIcon = (field) => {
+    if (!sortable || sortField !== field) {
+      return <ChevronsUpDown size={14} />
+    }
+    return sortDirection === 'asc' 
+      ? <ChevronUp size={14} /> 
+      : <ChevronDown size={14} />
   }
 
   const renderCellContent = (item, column) => {
-    if(column.render) {
-      return column.render(item[column.key], item);
+    if (column.render) {
+      return column.render(item[column.key], item)
     }
 
-    const value = item[column.key];
+    const value = item[column.key]
 
-    // Renderizado de columnas especiales
-    if(column.type === 'rating' && typeof value === 'number') {
-      return (
-        <div className="rating-cell">
-          <span className="rating-value">
-            {value.toFixed(1)}
-          </span>
-          <span className="rating-stars">
-            {'★'.repeat(Math.round(value))}
-            {'☆'.repeat(5 - Math.round(value))}
-          </span>
-        </div>
-      );
+    switch (column.type) {
+      case 'rating':
+        if (typeof value === 'number') {
+          const filledStars = Math.round(value)
+          return (
+            <Stack gap={2}>
+              <Text fw={600}>{value.toFixed(1)}</Text>
+              <Group gap={2}>
+                {[...Array(5)].map((_, i) => (
+                  <Star 
+                    key={i}
+                    size={14}
+                    fill={i < filledStars ? '#FFD700' : 'none'}
+                    color="#FFD700"
+                  />
+                ))}
+              </Group>
+            </Stack>
+          )
+        }
+        break
+
+      case 'price':
+        if (typeof value === 'number') {
+          return `$${value.toFixed(2)}`
+        }
+        break
+
+      case 'boolean':
+        return value ? (
+          <Group gap="xs">
+            <Check size={16} color="green" />
+            <Text size="sm">Sí</Text>
+          </Group>
+        ) : (
+          <Group gap="xs">
+            <X size={16} color="red" />
+            <Text size="sm">No</Text>
+          </Group>
+        )
+
+      case 'date':
+        if (value) {
+          return new Date(value).toLocaleDateString()
+        }
+        break
+
+      case 'array':
+        if (Array.isArray(value)) {
+          return (
+            <Group gap={4} wrap="wrap">
+              {value.slice(0, 3).map((item, index) => (
+                <Badge
+                  key={index}
+                  size="sm"
+                  variant="light"
+                  style={{
+                    backgroundColor: 'var(--color-fondo)',
+                    color: 'var(--color-texto-secundario)',
+                  }}
+                >
+                  {item.name || item}
+                </Badge>
+              ))}
+              {value.length > 3 && (
+                <Text size="xs" c="dimmed">
+                  +{value.length - 3} más
+                </Text>
+              )}
+            </Group>
+          )
+        }
+        break
+
+      case 'link':
+        if (value) {
+          return (
+            <Anchor
+              href={value}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: 'var(--color-botones)',
+                textDecoration: 'none',
+                padding: '0.25rem 0.5rem',
+                border: '1px solid var(--color-botones)',
+                borderRadius: '4px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                fontSize: '0.9rem',
+                '&:hover': {
+                  backgroundColor: 'var(--color-botones)',
+                  color: 'var(--color-blanco)',
+                }
+              }}
+            >
+              <LinkIcon size={14} />
+              {column.linkText || 'Visitar'}
+            </Anchor>
+          )
+        }
+        break
+
+      default:
+        return value || 'N/A'
     }
 
-    if(column.type === 'price' && typeof value === 'number') {
-      return `$${value.toFixed(2)}`;
-    }
-
-    if(column.type === 'boolean') {
-      return value ? '✅' : '❌';
-    }
-
-    if(column.type === 'date' && value) {
-      return new Date(value).toLocaleDateString();
-    }
-
-    if(column.type === 'array' && Array.isArray(value)) {
-      return (
-        <div className="array-cell">
-          {value.slice(0, 3).map((item, index) => (
-            <span key={index} className="array-item">
-              {item.name || item}
-            </span>
-          ))}
-          {value.length > 3 && (
-            <span className="more-items">
-              +{value.length - 3} más 
-            </span>
-          )}
-        </div>
-      );
-    }
-
-    if(column.type === 'link' && value) {
-      return (
-        <a 
-          href={value} 
-          target="_blank"
-          rel="noopener noreferrer"
-          className="link-cell"
-          >
-            {column.linkText || 'Visitar'}
-          </a>
-      );
-    }
-
-    return value || 'N/A';
+    return value || 'N/A'
   }
 
-  if(loading) {
+  const visibleColumns = useMemo(() => {
+    return columns.filter((column, index) => {
+      if (isSmallMobile) {
+        return index < 3 && column.showOnMobile !== false
+      }
+      if (isMobile) {
+        return index < 4 && column.showOnMobile !== false
+      }
+      return true
+    })
+  }, [columns, isMobile, isSmallMobile])
+
+  if (loading) {
     return (
-      <div className="generic-table-loading">
-        <div className="loading-spinner"></div>
-        <p>Cargando datos...</p>
-      </div>
-    );
+      <Box
+        style={{
+          textAlign: 'center',
+          padding: '3rem',
+          color: 'var(--color-texto-secundario)',
+        }}
+      >
+        <Loader size="lg" />
+        <Text mt="md">Cargando datos...</Text>
+      </Box>
+    )
   }
 
   return (
-    <div className={`generic-table-container ${className}`}>
-      {/* Barra de busqueda y acciones */}
+    <Box 
+      className={className}
+      style={{
+        backgroundColor: 'var(--color-blanco)',
+        borderRadius: 'var(--border-radius)',
+        boxShadow: 'var(--sombra-suave)',
+        overflow: 'hidden',
+        marginBottom: '2rem',
+      }}
+    >
+      {/* Barra de búsqueda */}
       {(searchable || actions) && (
-        <div className="table-header-actions">
+        <Group 
+          justify="space-between" 
+          align="center" 
+          p="md"
+          style={{
+            borderBottom: '1px solid var(--color-border)',
+            flexWrap: 'wrap',
+            gap: '1rem',
+          }}
+        >
           {searchable && (
-            <div className="table-search-box">
+            <Box style={{ flex: 1, minWidth: isMobile ? '100%' : 300 }}>
               <SearchBox
-                placeholder='Buscar...'
+                placeholder="Buscar..."
                 onChange={handleSearch}
-                className='compact'
+                size="sm"
+                className="compact"
                 autoNavigate={false}
               />
-            </div>
+            </Box>
           )}
           {actions && (
-            <div className="table-actions">
+            <Group gap="xs" wrap="wrap">
               {actions}
-            </div>
+            </Group>
           )}
-        </div>
+        </Group>
       )}
-      {/* Resultados de la busqueda */}
-      <div className="table-info">
-        <p>Mostrando {paginatedData.length} de {filteredData.length} registros {searchTerm && `para "${searchTerm}"`}</p>
-      </div>
+
+      {/* Info */}
+      <Box
+        p="md"
+        style={{
+          backgroundColor: 'var(--color-fondo)',
+          borderBottom: '1px solid var(--color-border)',
+        }}
+      >
+        <Text size="sm" c="dimmed">
+          Mostrando {paginatedData.length} de {filteredData.length} registros
+          {searchTerm && ` para "${searchTerm}"`}
+        </Text>
+      </Box>
 
       {/* Tabla */}
-      <div className="table-responsive">
-        <table className="generic-table">
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th
+      <Box style={{ overflowX: 'auto' }}>
+        <Table 
+          striped
+          highlightOnHover={!!onRowClick}
+          style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+          }}
+        >
+          <Table.Thead>
+            <Table.Tr
+              style={{
+                backgroundColor: 'var(--color-fondo)',
+                position: 'sticky',
+                top: 0,
+              }}
+            >
+              {visibleColumns.map((column) => (
+                <Table.Th
                   key={column.key}
                   onClick={() => column.sortable !== false && handleSort(column.key)}
-                  className={`
-                    ${column.sortable !== false && sortable ? 'sortable' : ''}
-                    ${sortField === column.key ? 'sorting-active' : ''}
-                    ${column.className || ''}
-                  `}
-                  style={{ width: column.width }}
+                  style={{
+                    borderBottom: '2px solid var(--color-border)',
+                    cursor: column.sortable !== false ? 'pointer' : 'default',
+                    padding: '1rem',
+                    backgroundColor: sortField === column.key ? 'var(--color-lavanda)' : undefined,
+                    transition: 'var(--transicion-suave)',
+                    '&:hover': column.sortable !== false ? {
+                      backgroundColor: 'var(--color-beige)',
+                    } : {},
+                  }}
                 >
-                  <div className="th-content">
-                    {column.title}
+                  <Group justify="space-between" gap="xs">
+                    <Text fw={600} size="sm">
+                      {column.title}
+                    </Text>
                     {column.sortable !== false && sortable && (
-                      <span className="sort-icon">
+                      <ActionIcon
+                        variant="subtle"
+                        size="xs"
+                      >
                         {renderSortIcon(column.key)}
-                      </span>
+                      </ActionIcon>
                     )}
-                  </div>
-                </th>
+                  </Group>
+                </Table.Th>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
             {paginatedData.length > 0 ? (
               paginatedData.map((item, index) => (
-                <tr
+                <Table.Tr
                   key={item.id || index}
-                  className={`
-                    ${rowClassName}
-                    ${onRowClick ? 'clickable-row' : ''}
-                  `}
                   onClick={() => onRowClick && onRowClick(item)}
+                  style={{
+                    cursor: onRowClick ? 'pointer' : 'default',
+                    transition: 'var(--transicion-suave)',
+                    '&:hover': onRowClick ? {
+                      backgroundColor: 'var(--color-fondo)',
+                    } : {},
+                  }}
                 >
-                  {columns.map((column) =>(
-                    <td
+                  {visibleColumns.map((column) => (
+                    <Table.Td 
                       key={column.key}
+                      style={{
+                        padding: '1rem',
+                        borderBottom: '1px solid var(--color-border)',
+                        verticalAlign: 'top',
+                      }}
                     >
                       {renderCellContent(item, column)}
-                    </td>
+                    </Table.Td>
                   ))}
-                </tr>
+                </Table.Tr>
               ))
-            ): (
-              <tr>
-                <td colSpan={columns.length} className="no-data">{emptyMessage}</td>
-              </tr>
+            ) : (
+              <Table.Tr>
+                <Table.Td 
+                  colSpan={visibleColumns.length}
+                  style={{ 
+                    textAlign: 'center', 
+                    padding: '2rem',
+                    color: 'var(--color-texto-claro)',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  {emptyMessage}
+                </Table.Td>
+              </Table.Tr>
             )}
-          </tbody>
-        </table>
-      </div>
-      
+          </Table.Tbody>
+        </Table>
+      </Box>
+
       {/* Paginación */}
       {pagination && totalPages > 1 && (
-        <div className="table-pagination">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="pagination-btn"
-          >
-            Anterior
-          </button>
-          <span className="pagination-info">
-            Página {currentPage} de {totalPages}
-          </span>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="pagination-btn"
-          >
-            Siguiente
-          </button>
-        </div>
+        <Group 
+          justify="center" 
+          p="md"
+          style={{
+            borderTop: '1px solid var(--color-border)',
+            backgroundColor: 'var(--color-fondo)',
+          }}
+        >
+          <Pagination
+            value={currentPage}
+            onChange={handlePageChange}
+            total={totalPages}
+            size={isMobile ? 'sm' : 'md'}
+            withEdges={!isMobile}
+          />
+        </Group>
       )}
-    </div>
-  );
-};
+    </Box>
+  )
+}
 
-export default GenericTable;
+export default GenericTable

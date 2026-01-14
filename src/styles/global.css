@@ -21,3 +21,22 @@ body textarea[class]:focus {
 .shadow-custom {
   box-shadow: var(--sombra-suave);
 }
+
+/* MANTINE MODALS - SOLO LO ESENCIAL */
+/* Asegurar que el header no tape los modales */
+.mantine-AppShell-header {
+  z-index: 1000 !important;
+}
+
+/* Si aún hay problemas, prueba estas reglas de emergencia: */
+.mantine-Modal-root {
+  z-index: 9999 !important;
+}
+
+.mantine-Modal-content {
+  z-index: 10000 !important;
+}
+
+.mantine-Modal-overlay {
+  z-index: 9998 !important;
+}
